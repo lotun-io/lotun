@@ -13,6 +13,7 @@
   "dependencies": {
     "arp": "0.0.3",
     "default-gateway": "^2.7.1",
+    "graphql-client": "^2.0.1",
     "socket.io-client": "^2.0.4",
     "socket.io-stream": "^0.9.1",
     "systeminformation": "^3.38.0",
