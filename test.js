@@ -39,6 +39,7 @@ const httpServer = createServer((req, res) => {
 
 httpServer.on('clientError', (err, socket) => {
   console.log('clientError', err)
+  console.log(err.rawPacket.toString())
 })
 
 /*

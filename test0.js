@@ -1,14 +1,19 @@
 const http = require('http');
+const dgram = require('dgram')
+const server = dgram.createSocket('udp4');
 
-const hostname = '127.0.0.1';
-const port = 2222;
-
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain')
-  res.write('DO  PC World!\n')
+server.on('error', (err) => {
+  console.log(`server error:\n${err.stack}`)
+  server.close();
 })
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
+server.on('message', (msg, rinfo) => {
+  console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`)
+})
+
+server.on('listening', () => {
+  const address = server.address();
+  console.log(`server listening ${address.address}:${address.port}`)
+})
+
+server.send(Buffer.from('sss'), 2222)
