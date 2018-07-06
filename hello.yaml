@@ -1,0 +1,9 @@
+config:
+  target: 'https://test.lotun.app'
+  phases:
+    - duration: 60
+      arrivalRate: 100
+scenarios:
+  - flow:
+    - get:
+        url: "/"
