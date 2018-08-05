@@ -16,4 +16,6 @@ server.on('listening', () => {
   console.log(`server listening ${address.address}:${address.port}`)
 })
 
-server.send(Buffer.from('sss'), 2222)
+server.bind(2222, '1.1.1.1')
+
+//server.send(Buffer.from('sss'), 2222)

@@ -1,32 +1,50 @@
 /* eslint-disable no-console */
 const net = require('net');
-const systemInfo = require('./system-info');
 const WebSocket = require('ws');
-
+const systemInfo = require('./system-info');
 const WebsocketStream = require('./websocket-stream');
 
 let lotunClient = null;
 
 function createSocketStreamOut(message) {
-  const socketStream = new WebSocket(`ws://${message.hostname}/wsDeviceStreamOut?deviceToken=${lotunClient.deviceToken}`);
+  const socketStream = new WebSocket(
+    `ws://${message.hostname}/wsDeviceStreamOut?deviceToken=${lotunClient.deviceToken}`,
+  );
   const websocketStream = new WebsocketStream(socketStream);
 
+  let pingInterval = null;
+  let lastStreamDate = new Date();
   websocketStream.once('open', () => {
-    // console.log('socketStreamOut open');
+    console.log('socketStreamOut open');
+    websocketStream.on('stream', () => {
+      lastStreamDate = new Date();
+    });
+    pingInterval = setInterval(() => {
+      const timeoutDate = new Date();
+      timeoutDate.setSeconds(timeoutDate.getSeconds() - 5);
+      // @TODO check last stream createdAt
+      if (websocketStream.stream || lastStreamDate > timeoutDate) {
+        // websocketStream.socket.ping();
+      }
+    }, 5000);
   });
 
-  websocketStream.once('error', (err) => {
+  websocketStream.once('error', err => {
     console.log('socketStreamOut error');
     console.log(err);
   });
 
   websocketStream.once('close', () => {
     console.log('socketStreamOut close');
+    if (pingInterval) {
+      clearInterval(pingInterval);
+    }
   });
 
   // appPrivate.websocketStream = websocketStream
 
-  websocketStream.on('stream', (options) => {
+  websocketStream.on('stream', options => {
+    // make ping ?!
     const { stream, header } = options;
 
     const socket = new net.Socket();
@@ -39,47 +57,33 @@ function createSocketStreamOut(message) {
       port: forward.port,
     });
 
+    /*
     stream.on('end', () => {
-      // console.log('stream.end')
-    });
-
-    stream.on('close', () => {
-      // console.log('stream.close')
-    });
+      console.log('stream.end')
+    })
 
     stream.on('finish', () => {
-      // console.log('stream.finish')
-    });
+      console.log('stream.finish')
+    })
 
     stream.on('unpipe', () => {
-      // console.log('stream.unpipe')
-    });
+      console.log('stream.unpipe')
+    })
 
-    socket.on('error', (err) => {
-      console.log('socket.error');
+    stream.on('close', () => {
+      console.log('stream.close')
+    })
+    */
+
+    socket.on('error', err => {
+      // console.log('socket.error');
       stream.sendError(err);
-      stream.destroy();
       socket.destroy();
     });
 
     stream.on('error', () => {
       console.log('stream.error');
       stream.destroy();
-      socket.destroy();
-      // stream.removeAllListeners();
-      // socket.removeAllListeners();
-      // socket.destroy();
-      // stream.destroy();
-      // global.gc();
-    });
-
-    socket.on('end', () => {
-      // console.log('socket.end');
-      // stream.removeAllListeners();
-      // socket.removeAllListeners();
-      // socket.destroy();
-      // stream.destroy();
-      // global.gc();
     });
   });
 
@@ -106,7 +110,7 @@ const createSocketConnection = () => {
     // console.log('pong !')
   });
 
-  socket.on('message', async (data) => {
+  socket.on('message', async data => {
     const message = JSON.parse(data);
     if (message.type === 'closeReason') {
       lotunClient.emit('closeReason', message);
@@ -118,15 +122,17 @@ const createSocketConnection = () => {
 
     if (message.type === 'getSystemInfo') {
       const sysInfo = await systemInfo();
-      socket.send(JSON.stringify({
-        type: 'SystemInfo',
-        data: sysInfo,
-      }));
+      socket.send(
+        JSON.stringify({
+          type: 'SystemInfo',
+          data: sysInfo,
+        }),
+      );
     }
 
     if (message.type === 'appsPrivate') {
       appPrivate.closeAll();
-      message.data.forEach((one) => {
+      message.data.forEach(one => {
         appPrivate.createServer(one);
       });
     }
@@ -138,13 +144,13 @@ const createSocketConnection = () => {
     }
   });
 
-  socket.on('error', (err) => {
+  socket.on('error', err => {
     console.log('error', err);
     lotunClient.emit('error', err);
     socket.emit('close', err);
   });
 
-  socket.on('close', (err) => {
+  socket.on('close', err => {
     if (pingInterval) {
       clearInterval(pingInterval);
     }

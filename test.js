@@ -63,6 +63,10 @@ const server = net.createServer((socket) => {
     //console.log(d.toString())
   })
 
+  socket.on('error', () => {
+    socket.destroy()
+  })
+
   mitm.enable()
   const proxySocket = net.createConnection({port: 8124})
   mitm.disable()
