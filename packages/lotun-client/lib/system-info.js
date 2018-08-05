@@ -2,7 +2,6 @@ const si = require('systeminformation');
 const defaultGateway = require('default-gateway');
 const arp = require('arp');
 const os = require('os');
-const fs = require('fs');
 
 module.exports = function getSystemInfo() {
   return Promise.all([
@@ -18,17 +17,18 @@ module.exports = function getSystemInfo() {
     si.networkInterfaceDefault(),
     si.memLayout(),
     si.diskLayout(),
-    defaultGateway.v4().then(res =>
-      new Promise((resolve) => {
-        arp.getMAC(res.gateway, (err, mac) => {
-          if (err) {
-          } else {
-            res.mac = mac;
-          }
-          resolve(res);
-        });
-      })),
-  ]).then((res) => {
+    defaultGateway.v4().then(
+      res =>
+        new Promise(resolve => {
+          arp.getMAC(res.gateway, (err, mac) => {
+            if (err != null) {
+              res.mac = mac;
+            }
+            resolve(res);
+          });
+        }),
+    ),
+  ]).then(res => {
     const data = {};
     data.system = res[0];
     data.bios = res[1];
@@ -40,7 +40,7 @@ module.exports = function getSystemInfo() {
     data.graphics = res[7];
     data.net = res[8];
     data.netDefault = data.net
-      .filter((one) => {
+      .filter(one => {
         if (one.iface === res[9]) {
           return true;
         }

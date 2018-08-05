@@ -1,36 +1,36 @@
-const net = require('net')
+const net = require('net');
 
 class AppPrivate {
   constructor() {
-    this.servers = []
+    this.servers = [];
   }
 
   createServer(options) {
-    console.log(options)
-    const server = net.createServer((socket) => {
-      const stream = this.websocketStream.createStream(options)
+    console.log(options);
+    const server = net.createServer(socket => {
+      const stream = this.websocketStream.createStream(options);
 
-      socket.pipe(stream).pipe(socket)
-
-    })
+      socket.pipe(stream).pipe(socket);
+    });
 
     server.listen({
       host: options.entry.hostname,
-      port: options.entry.port
-    })
+      port: options.entry.port,
+    });
 
-    this.servers.push(server)
+    this.servers.push(server);
   }
 
   closeAll() {
-    this.servers.forEach((one) => {
-      this.closeServer(one)
-    })
+    this.servers.forEach(one => {
+      this.closeServer(one);
+    });
   }
 
+  /* eslint-disable class-methods-use-this */
   closeServer(server) {
-    server.close()
+    server.close();
   }
 }
 
-module.exports = new AppPrivate()
+module.exports = new AppPrivate();

@@ -3,16 +3,26 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0"
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "lint:check": "eslint 'packages/**/*.js'",
+    "lint": "eslint --fix 'packages/**/*.js'",
+    "prettier": "prettier --write 'packages/**/*.js'",
+    "prettier:check": "prettier -l 'packages/**/*.js'"
   },
+  "precommit": [
+    "prettier",
+    "lint"
+  ],
   "author": "FreshIT, s.r.o.",
   "license": "MIT",
   "devDependencies": {
+    "babel-eslint": "^8.2.6",
     "eslint": "^5.0.1",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-import": "^2.13.0",
     "lerna": "^3.0.0-rc.0",
+    "pre-commit": "^1.2.2",
     "prettier": "^1.13.6"
   },
   "repository": {

@@ -1,7 +1,5 @@
 const fs = require('fs');
-const {
-  app, Tray, Menu, Notification, dialog,
-} = require('electron');
+const { app, Tray, Menu, Notification, dialog } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const LotunClient = require('@lotun/client');
 const { trayIcons, LOTUN_FILE } = require('./constants');
@@ -35,7 +33,7 @@ app.on('ready', async () => {
   }
 });
 
-client.on('closeReason', (message) => {
+client.on('closeReason', message => {
   if (message.code === 'DEVICE_TOKEN_UNPAIRED' && lastError !== message.code) {
     const contextMenu = [
       {
@@ -86,7 +84,7 @@ autoUpdater.on('update-available', () => {
       message: 'New update is available, do you want to update now?',
       buttons: ['Yes', 'No'],
     },
-    (buttonIndex) => {
+    buttonIndex => {
       if (buttonIndex === 0) {
         autoUpdater.downloadUpdate();
       }
@@ -113,6 +111,6 @@ autoUpdater.on('update-downloaded', () => {
   );
 });
 
-autoUpdater.on('error', (error) => {
+autoUpdater.on('error', error => {
   dialog.showErrorBox('Error: ', error == null ? 'unknown' : (error.stack || error).toString());
 });

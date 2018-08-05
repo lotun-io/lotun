@@ -1,6 +1,6 @@
-const { PassThrough, Duplex } = require('stream');
+/* eslint-disable no-plusplus */
+const { Duplex } = require('stream');
 const EventEmitter = require('events');
-const util = require('util');
 
 class DuplexStream extends Duplex {
   constructor(options) {
@@ -8,36 +8,36 @@ class DuplexStream extends Duplex {
 
     this.websocketStream = options.websocketStream;
     this.streamId = options.streamId;
-    this._started = false
+    this._started = false;
 
-    this.type = options.type
+    this.type = options.type;
 
     this.on('end', () => {
-      this._endCalled = true
+      this._endCalled = true;
       if (this._endCalled && this._finishCalled) {
-        this._cleanUp()
-        this.removeAllListeners()
+        this._cleanUp();
+        this.removeAllListeners();
       }
-    })
+    });
 
     this.on('finish', () => {
-      this._finishCalled = true
+      this._finishCalled = true;
       if (this._endCalled && this._finishCalled) {
-        this._cleanUp()
-        this.removeAllListeners()
+        this._cleanUp();
+        this.removeAllListeners();
       }
-    })
+    });
   }
 
   _cleanUp() {
-    //console.log('cleanUp');
+    // console.log('cleanUp');
     if (this.websocketStream) {
       if (this._canWrite()) {
         const message = this.websocketStream.constructor.encodeMessage({
           type: 'stream.delete',
           streamId: this.streamId,
-        })
-        this.websocketStream.socket.send(message)
+        });
+        this.websocketStream.socket.send(message);
       }
 
       this.websocketStream._deleteStream();
@@ -45,34 +45,38 @@ class DuplexStream extends Duplex {
 
     if (!this.cleanUpCalled && this._canWrite()) {
       // only emit if socket is still open !
-      this.emit('cleanUp')
+      this.emit('cleanUp');
     }
 
-    this.websocketStream = null
-    this.cleanUpCalled = true
-    this.destroy()
+    this.websocketStream = null;
+    this.cleanUpCalled = true;
+    this.destroy();
   }
 
   _write(chunk, encoding, callback) {
     if (this._canWrite()) {
-      const message = this.websocketStream.constructor.encodeMessage({
-        type: 'stream.write',
-        streamId: this.streamId,
-      }, chunk);
+      const message = this.websocketStream.constructor.encodeMessage(
+        {
+          type: 'stream.write',
+          streamId: this.streamId,
+        },
+        chunk,
+      );
       this.websocketStream.socket.send(message);
-      this._cb = callback
+      this._cb = callback;
     } else {
-      callback()
+      callback();
     }
   }
 
   _canWrite() {
-    const canWrite = (this.websocketStream) && (this.websocketStream.socket.readyState === this.websocketStream.socket.OPEN)
+    const canWrite =
+      this.websocketStream && this.websocketStream.socket.readyState === this.websocketStream.socket.OPEN;
     if (!canWrite) {
-      //console.log('cannot write !')
+      // console.log('cannot write !')
     }
-    return canWrite
-    //return true
+    return canWrite;
+    // return true
   }
 
   _read() {
@@ -86,7 +90,7 @@ class DuplexStream extends Duplex {
   }
 
   _final(callback) {
-    //console.log('DuplexStream.flush');
+    // console.log('DuplexStream.flush');
     if (this._canWrite()) {
       const message = this.websocketStream.constructor.encodeMessage({
         type: 'stream.final',
@@ -111,7 +115,7 @@ class DuplexStream extends Duplex {
       });
       this.websocketStream.socket.send(message);
     }
-    //this.destroy(err);
+    // this.destroy(err);
   }
 }
 
@@ -128,7 +132,7 @@ class WebsocketStream extends EventEmitter {
       });
     }
 
-    this.socket.on('error', (err) => {
+    this.socket.on('error', err => {
       if (this.stream) {
         this.stream.destroy();
       }
@@ -138,7 +142,7 @@ class WebsocketStream extends EventEmitter {
       this.socket.removeAllListeners();
       this.removeAllListeners();
 
-      this.socket = null
+      this.socket = null;
     });
 
     this.socket.on('close', () => {
@@ -152,13 +156,13 @@ class WebsocketStream extends EventEmitter {
       this.removeAllListeners();
     });
 
-    this.socket.on('message', (data) => {
+    this.socket.on('message', data => {
       const message = this.constructor.decodeMessage(data);
-      //console.log('message.type', message.header.type)
-      //console.log('socket.message.'+message.header.type, name ,message.header.streamId)
+      // console.log('message.type', message.header.type)
+      // console.log('socket.message.'+message.header.type, name ,message.header.streamId)
 
       if (message.header.type === 'stream.create') {
-        const stream = this._createStream()
+        const stream = this._createStream();
 
         this.emit('stream', {
           stream,
@@ -169,14 +173,14 @@ class WebsocketStream extends EventEmitter {
       if (message.header.type === 'stream.delete') {
         const stream = this._getStream();
         if (stream) {
-          this.stream._cleanUp()
+          this.stream._cleanUp();
         }
       }
 
       if (message.header.type === 'stream.write') {
         const stream = this._getStream();
         if (stream) {
-          stream._started = true
+          stream._started = true;
           if (!stream._readableState.ended) {
             stream.push(message.buffer);
           }
@@ -186,8 +190,8 @@ class WebsocketStream extends EventEmitter {
       if (message.header.type === 'stream.ack') {
         const stream = this._getStream();
         if (stream && stream._cb) {
-          stream._cb()
-          stream._cb = null
+          stream._cb();
+          stream._cb = null;
         }
       }
 
@@ -205,7 +209,7 @@ class WebsocketStream extends EventEmitter {
         if (stream) {
           const err = new Error(message.header.data.message);
           err.code = message.header.data.code;
-          stream.emit('error', err)
+          stream.emit('error', err);
         }
       }
     });
@@ -213,33 +217,33 @@ class WebsocketStream extends EventEmitter {
 
   _getStream() {
     if (!this.stream) {
-      //console.log('stream not found')
-      //throw new Error('stream not found')
+      // console.log('stream not found')
+      // throw new Error('stream not found')
     }
-    return this.stream
-    //return this.streams.get(streamId);
+    return this.stream;
+    // return this.streams.get(streamId);
   }
 
   _deleteStream() {
-    this.stream = null
-    //console.log('delete stream !', streamId);
-    //this.streams.delete(streamId);
+    this.stream = null;
+    // console.log('delete stream !', streamId);
+    // this.streams.delete(streamId);
   }
 
   _createStream() {
-    //console.log('createStream');
-    //console.log(streamId);
+    // console.log('createStream');
+    // console.log(streamId);
     if (this.stream) {
-      this.stream.destroy()
-      this.stream = null
-      console.log('Stream not ended yet!')
+      this.stream.destroy();
+      this.stream = null;
+      console.log('Stream not ended yet!');
     }
 
     const stream = new DuplexStream({
       websocketStream: this,
     });
 
-    this.stream = stream
+    this.stream = stream;
     return stream;
   }
 
@@ -249,7 +253,7 @@ class WebsocketStream extends EventEmitter {
       data,
     };
 
-    const stream = this._createStream(header.streamId, 'local')
+    const stream = this._createStream(header.streamId, 'local');
     const message = this.constructor.encodeMessage(header);
     this.socket.send(message);
     return stream;
