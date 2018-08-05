@@ -1,18 +1,18 @@
+/* eslint-disable no-console */
 const net = require('net');
 const systemInfo = require('./system-info');
-const WebSocket = require('uws');
+const WebSocket = require('ws');
 
-//const WebsocketStream = require('../../lotun-be/lib/core/server/websocket-stream');
+const WebsocketStream = require('./websocket-stream');
 
-const WebsocketStream = require('./websocket-stream')
-
+let lotunClient = null;
 
 function createSocketStreamOut(message) {
   const socketStream = new WebSocket(`ws://${message.hostname}/wsDeviceStreamOut?deviceToken=${lotunClient.deviceToken}`);
   const websocketStream = new WebsocketStream(socketStream);
 
   websocketStream.once('open', () => {
-    //console.log('socketStreamOut open');
+    // console.log('socketStreamOut open');
   });
 
   websocketStream.once('error', (err) => {
@@ -40,71 +40,71 @@ function createSocketStreamOut(message) {
     });
 
     stream.on('end', () => {
-      //console.log('stream.end')
-    })
+      // console.log('stream.end')
+    });
 
     stream.on('close', () => {
-      //console.log('stream.close')
-    })
+      // console.log('stream.close')
+    });
 
     stream.on('finish', () => {
-      //console.log('stream.finish')
-    })
+      // console.log('stream.finish')
+    });
 
     stream.on('unpipe', () => {
-      //console.log('stream.unpipe')
+      // console.log('stream.unpipe')
     });
 
     socket.on('error', (err) => {
       console.log('socket.error');
       stream.sendError(err);
-      stream.destroy()
-      socket.destroy()
+      stream.destroy();
+      socket.destroy();
     });
 
-    stream.on('error', (err) => {
+    stream.on('error', () => {
       console.log('stream.error');
-      stream.destroy()
-      socket.destroy()
-      //stream.removeAllListeners();
-      //socket.removeAllListeners();
-      //socket.destroy();
-      //stream.destroy();
-      //global.gc();
+      stream.destroy();
+      socket.destroy();
+      // stream.removeAllListeners();
+      // socket.removeAllListeners();
+      // socket.destroy();
+      // stream.destroy();
+      // global.gc();
     });
 
     socket.on('end', () => {
-      //console.log('socket.end');
-      //stream.removeAllListeners();
-      //socket.removeAllListeners();
-      //socket.destroy();
-      //stream.destroy();
-      //global.gc();
+      // console.log('socket.end');
+      // stream.removeAllListeners();
+      // socket.removeAllListeners();
+      // socket.destroy();
+      // stream.destroy();
+      // global.gc();
     });
   });
 
   // return socketStream
-};
+}
 
 const appPrivate = require('./appPrivate');
 
-const createSocketConnection = function () {
+const createSocketConnection = () => {
   // console.log(`${lotunClient.connectUrl}/wsClient?deviceToken=${lotunClient.deviceToken}`)
   const socket = new WebSocket(`${lotunClient.connectUrl}/wsDeviceMaster?deviceToken=${lotunClient.deviceToken}`);
-  let pingInterval = null
+  let pingInterval = null;
 
   socket.on('open', async () => {
     console.log('open');
     pingInterval = setInterval(() => {
       socket.ping();
-      //@TODO check timeout and close !
+      // @TODO check timeout and close !
     }, 1000);
   });
 
   socket.on('pong', () => {
     // check client pongs for timeout !
-    //console.log('pong !')
-  })
+    // console.log('pong !')
+  });
 
   socket.on('message', async (data) => {
     const message = JSON.parse(data);
@@ -113,7 +113,7 @@ const createSocketConnection = function () {
     }
 
     if (message.type === 'ready') {
-      lotunClient.emit('connected')
+      lotunClient.emit('connected');
     }
 
     if (message.type === 'getSystemInfo') {
@@ -132,8 +132,8 @@ const createSocketConnection = function () {
     }
 
     if (message.type === 'StreamOutCreate') {
-      //console.log('StreamOutCreate');
-      //console.log(message);
+      // console.log('StreamOutCreate');
+      // console.log(message);
       createSocketStreamOut(message);
     }
   });
@@ -146,7 +146,7 @@ const createSocketConnection = function () {
 
   socket.on('close', (err) => {
     if (pingInterval) {
-      clearInterval(pingInterval)
+      clearInterval(pingInterval);
     }
 
     console.log('close', err);
@@ -157,7 +157,6 @@ const createSocketConnection = function () {
   });
 };
 
-let lotunClient = null;
 module.exports = {
   createConnection(lc) {
     lotunClient = lc;

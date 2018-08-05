@@ -1,37 +1,23 @@
 {
-  "name": "@freshit/lt",
-  "version": "1.0.7",
-  "main": "index.js",
+  "name": "lotun",
+  "version": "0.0.1",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 0"
   },
-  "bin": {
-    "lt": "lib/cli.js"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "arp": "0.0.3",
-    "default-gateway": "^2.7.1",
-    "graphql-client": "^2.0.1",
-    "http-proxy": "^1.17.0",
-    "koa": "^2.5.1",
-    "minimist": "^1.2.0",
-    "mitm": "^1.3.3",
-    "mkdirp": "^0.5.1",
-    "reconnecting-websocket": "^3.2.2",
-    "systeminformation": "^3.38.0",
-    "uws": "^9.148.0",
-    "ws": "^5.1.1"
-  },
-  "directories": {
-    "lib": "lib"
-  },
+  "author": "FreshIT, s.r.o.",
+  "license": "MIT",
   "devDependencies": {
-    "babel-eslint": "^8.2.3",
-    "eslint": "^4.19.1",
-    "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.12.0"
+    "eslint": "^5.0.1",
+    "eslint-config-airbnb-base": "^13.0.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-import": "^2.13.0",
+    "lerna": "^3.0.0-rc.0",
+    "prettier": "^1.13.6"
   },
-  "description": ""
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun"
+  },
+  "description": "Monorepo for all Lotun Client packages (client, cli and electron app)"
 }

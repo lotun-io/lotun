@@ -1,0 +1,24 @@
+{
+  "name": "@lotun/client",
+  "author": "FreshIT, s.r.o.",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/lotun-client"
+  },
+  "dependencies": {
+    "arp": "0.0.3",
+    "default-gateway": "^2.7.1",
+    "graphql-client": "^2.0.1",
+    "http-proxy": "^1.17.0",
+    "koa": "^2.5.1",
+    "minimist": "^1.2.0",
+    "mitm": "^1.3.3",
+    "mkdirp": "^0.5.1",
+    "reconnecting-websocket": "^3.2.2",
+    "systeminformation": "^3.38.0",
+    "ws": "^5.1.1"
+  }
+}
