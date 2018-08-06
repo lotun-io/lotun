@@ -1,7 +1,3 @@
-/*
-  eslint-disable
-*/
-
 const { Duplex } = require('stream');
 const EventEmitter = require('events');
 
@@ -140,9 +136,9 @@ class WebsocketStream extends EventEmitter {
     }
 
     this.socket.on('error', err => {
-      Array.from(this.streams.values()).forEach(value => {
+      for (const value of this.streams.values()) {
         value.destroy();
-      });
+      }
 
       this.emit('error', err);
       this.socket.terminate();
@@ -153,9 +149,9 @@ class WebsocketStream extends EventEmitter {
     });
 
     this.socket.on('close', () => {
-      Array.from(this.streams.values()).forEach(value => {
+      for (const value of this.streams.values()) {
         value.destroy();
-      });
+      }
 
       this.emit('close');
       this.socket.terminate();
