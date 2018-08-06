@@ -15,7 +15,6 @@ function createSocketStreamOut(message) {
   let pingInterval = null;
   let lastStreamDate = new Date();
   websocketStream.once('open', () => {
-    console.log('socketStreamOut open');
     websocketStream.on('stream', () => {
       lastStreamDate = new Date();
     });
@@ -29,13 +28,9 @@ function createSocketStreamOut(message) {
     }, 5000);
   });
 
-  websocketStream.once('error', err => {
-    console.log('socketStreamOut error');
-    console.log(err);
-  });
+  websocketStream.once('error', () => {});
 
   websocketStream.once('close', () => {
-    console.log('socketStreamOut close');
     if (pingInterval) {
       clearInterval(pingInterval);
     }
@@ -82,7 +77,6 @@ function createSocketStreamOut(message) {
     });
 
     stream.on('error', () => {
-      console.log('stream.error');
       stream.destroy();
     });
   });
@@ -90,7 +84,7 @@ function createSocketStreamOut(message) {
   // return socketStream
 }
 
-const appPrivate = require('./appPrivate');
+const appPrivate = require('./app-private');
 
 const createSocketConnection = () => {
   // console.log(`${lotunClient.connectUrl}/wsClient?deviceToken=${lotunClient.deviceToken}`)
@@ -98,7 +92,6 @@ const createSocketConnection = () => {
   let pingInterval = null;
 
   socket.on('open', async () => {
-    console.log('open');
     pingInterval = setInterval(() => {
       socket.ping();
       // @TODO check timeout and close !
@@ -145,7 +138,6 @@ const createSocketConnection = () => {
   });
 
   socket.on('error', err => {
-    console.log('error', err);
     lotunClient.emit('error', err);
     socket.emit('close', err);
   });
@@ -154,8 +146,6 @@ const createSocketConnection = () => {
     if (pingInterval) {
       clearInterval(pingInterval);
     }
-
-    console.log('close', err);
     lotunClient.emit('close', err);
     setTimeout(() => {
       createSocketConnection();

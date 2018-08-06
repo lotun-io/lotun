@@ -30,7 +30,6 @@ class DuplexStream extends Duplex {
   }
 
   _cleanUp() {
-    // console.log('cleanUp');
     if (this.websocketStream) {
       if (this._canWrite()) {
         const message = this.websocketStream.constructor.encodeMessage({

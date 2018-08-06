@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { app, Tray, Menu, Notification, dialog } = require('electron');
 const { autoUpdater } = require('electron-updater');
-const LotunClient = require('@lotun/client');
+const { client, errorCodes } = require('@lotun/client');
 const { trayIcons, LOTUN_FILE } = require('./constants');
 const { readFile, openPairURL } = require('./helpers');
 const { DEFAULT_CONTEXT_MENU } = require('./menu');
@@ -12,7 +12,7 @@ let lastError;
 
 autoUpdater.autoDownload = false;
 
-const client = LotunClient.create();
+const lotunClient = client.create();
 
 app.on('ready', async () => {
   tray = new Tray(trayIcons.BASE_ICON);
@@ -22,19 +22,19 @@ app.on('ready', async () => {
   try {
     const tokenFile = await readFile(LOTUN_FILE);
     token = JSON.parse(tokenFile.toString()).deviceToken;
-    client.setDeviceToken(token);
+    lotunClient.setDeviceToken(token);
   } catch (e) {
-    token = await client.getNewDeviceToken();
+    token = await lotunClient.getNewDeviceToken();
     const data = { deviceToken: token };
     fs.writeFileSync(LOTUN_FILE, JSON.stringify(data));
-    client.setDeviceToken(token);
+    lotunClient.setDeviceToken(token);
   } finally {
-    client.connect();
+    lotunClient.connect();
   }
 });
 
-client.on('closeReason', message => {
-  if (message.code === 'DEVICE_TOKEN_UNPAIRED' && lastError !== message.code) {
+lotunClient.on('closeReason', message => {
+  if (message.code === errorCodes.DEVICE_TOKEN_UNPAIRED && lastError !== message.code) {
     const contextMenu = [
       {
         label: 'Pair new device',
@@ -55,14 +55,14 @@ client.on('closeReason', message => {
   lastError = message.code;
 });
 
-client.on('close', () => {
+lotunClient.on('close', () => {
   if (lastError !== 'DEVICE_TOKEN_UNPAIRED') {
     tray.setImage(trayIcons.OFFLINE_ICON);
     tray.setPressedImage(trayIcons.OFFLINE_ICON_PRESSED);
   }
 });
 
-client.on('connected', () => {
+lotunClient.on('connected', () => {
   const contextMenu = [
     {
       label: 'Device connected',

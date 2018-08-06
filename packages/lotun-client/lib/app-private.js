@@ -6,7 +6,6 @@ class AppPrivate {
   }
 
   createServer(options) {
-    console.log(options);
     const server = net.createServer(socket => {
       const stream = this.websocketStream.createStream(options);
 

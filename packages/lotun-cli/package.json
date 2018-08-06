@@ -3,6 +3,12 @@
   "author": "FreshIT, s.r.o.",
   "main": "bin/lotun.js",
   "license": "MIT",
+  "files": [
+    "bin"
+  ],
+  "scripts": {
+    "start": "node bin/lotun.js"
+  },
   "bin": {
     "lotun": "bin/lotun.js"
   },
@@ -12,7 +18,7 @@
   },
   "dependencies": {
     "@lotun/client": "^0.0.1",
-    "minimist": "^1.2.0",
-    "mkdirp": "^0.5.1"
+    "chalk": "^2.4.1",
+    "minimist": "^1.2.0"
   }
 }

@@ -3,15 +3,16 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "bootstrap": "lerna bootstrap",
     "test": "echo \"Error: no test specified\" && exit 0",
-    "lint:check": "eslint 'packages/**/*.js'",
-    "lint": "eslint --fix 'packages/**/*.js'",
-    "prettier": "prettier --write 'packages/**/*.js'",
-    "prettier:check": "prettier -l 'packages/**/*.js'"
+    "lint": "eslint 'packages/**/*.js'",
+    "lint:format": "eslint --fix 'packages/**/*.js'",
+    "prettier:format": "prettier --write 'packages/**/*.js'",
+    "prettier": "prettier -l 'packages/**/*.js'"
   },
   "precommit": [
-    "prettier",
-    "lint"
+    "prettier:format",
+    "lint:format"
   ],
   "author": "FreshIT, s.r.o.",
   "license": "MIT",
