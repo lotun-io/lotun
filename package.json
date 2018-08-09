@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "test": "echo \"Error: no test specified\" && exit 0",
+    "test": "npm run prettier && npm run lint",
     "lint": "eslint 'packages/**/*.js'",
     "lint:format": "eslint --fix 'packages/**/*.js'",
     "prettier:format": "prettier --write 'packages/**/*.js'",
