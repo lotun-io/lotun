@@ -2,18 +2,18 @@ version: 2 # use CircleCI 2.0
 jobs: # a collection of steps
   build: # runs not using Workflows must have a `build` job as entry point
     docker:
-      - image: circleci/node:10.8.0-browsers
+      - image: alpine:8.11.3
     steps: # a collection of executable commands
       - checkout # special step to check out source code to working directory
-      - ? run
+      - run
         name: update-npm
         command: 'sudo npm install -g npm@latest'
       - restore_cache: # special step to restore the dependency cache
         key: dependency-cache-{{ checksum "package.json" }}
-      - ? run
+      - run
         name: install-npm-wee
         command: npm install
-      - ? run
+      - run
         name: bootstrap
         command: npm run bootstrap
       - save_cache: # special step to save the dependency cache
