@@ -1,22 +1,15 @@
-version: 2
-jobs:
-  build:
-    docker:
-      - image: mhart/alpine-node:8.11.3
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-
-            - v1-dependencies-
+version: 2 # use CircleCI 2.0
+jobs: # a collection of steps
+  build: # runs not using Workflows must have a `build` job as entry point
+    steps: # a collection of executable commands
+      - checkout # special step to check out source code to working directory
+      - run: 'sudo npm install -g npm@latest'
+      - restore_cache: # special step to restore the dependency cache
+        key: dependency-cache-{{ checksum "package.json" }}
       - run: npm install
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
       - run: npm run bootstrap
+      - save_cache: # special step to save the dependency cache
+        key: dependency-cache-{{ checksum "package.json" }}
+        paths:
+          - ./node_modules
       - run: npm test
