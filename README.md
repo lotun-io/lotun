@@ -6,7 +6,8 @@
 ## Installation
 
 ```
-npx lerna boostrap
+npm install
+npm run bootstrap
 ```
 
 TODO
