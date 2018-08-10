@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mhart/alpine-node:8.11.3
+      - image: circleci/node:8.11.3-browsers
     working_directory: ~/repo
     steps:
       - checkout
