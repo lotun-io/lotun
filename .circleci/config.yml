@@ -6,7 +6,7 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      run: 'rm ./package-lock.json'
+      - run: 'rm ./package-lock.json'
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
