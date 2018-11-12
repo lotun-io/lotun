@@ -5,15 +5,16 @@ const socketClient = require('./socket-client');
 class LotunClient extends EventEmitter {
   constructor() {
     super();
-    this.connectUrl = 'wss://device.dev.lotun.io';
-    this.connectUrlApi = 'https://api.dev.lotun.io';
+    this.connectUrl = 'wss://device.lotun.io';
+    this.connectUrlApi = 'https://api.lotun.io';
+
     if (process.env.NODE_ENV === 'local') {
-      this.connectUrl = 'ws://api.lotun.local:5000';
-      this.connectUrlApi = 'http://api.lotun.local:3000';
+      this.connectUrl = 'wss://device.loc.lotun.io';
+      this.connectUrlApi = 'https://api.loc.lotun.io';
     }
-    if (process.env.NODE_ENV === 'production') {
-      this.connectUrl = 'wss://device.lotun.io';
-      this.connectUrlApi = 'https://api.lotun.io';
+    if (process.env.NODE_ENV === 'devel') {
+      this.connectUrl = 'wss://device.dev.lotun.io';
+      this.connectUrlApi = 'https://api.dev.lotun.io';
     }
   }
 
@@ -26,13 +27,13 @@ class LotunClient extends EventEmitter {
     return client
       .query(
         `
-      query {
-        deviceTokenGenerate {
-          token
-        }
-      }`,
+        query {
+          generateDeviceToken {
+            token
+          }
+        }`,
       )
-      .then(result => result.data.deviceTokenGenerate.token);
+      .then(result => result.data.generateDeviceToken.token);
   }
 
   connect() {

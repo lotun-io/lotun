@@ -3,7 +3,48 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const { client, errorCodes } = require('@lotun/client');
-const argv = require('minimist')(process.argv.slice(2));
+
+function mkDirByPathSync(targetDir, { isRelativeToScript = false } = {}) {
+  const sep = path.sep;
+  const initDir = path.isAbsolute(targetDir) ? sep : '';
+  const baseDir = isRelativeToScript ? __dirname : '.';
+
+  return targetDir.split(sep).reduce((parentDir, childDir) => {
+    const curDir = path.resolve(baseDir, parentDir, childDir);
+    try {
+      fs.mkdirSync(curDir);
+    } catch (err) {
+      if (err.code === 'EEXIST') {
+        // curDir already exists!
+        return curDir;
+      }
+
+      // To avoid `EISDIR` error on Mac and `EACCES`-->`ENOENT` and `EPERM` on Windows.
+      if (err.code === 'ENOENT') {
+        // Throw the original parentDir error on curDir `ENOENT` failure.
+        throw new Error(`EACCES: permission denied, mkdir '${parentDir}'`);
+      }
+
+      const caughtErr = ['EACCES', 'EPERM', 'EISDIR'].indexOf(err.code) > -1;
+      if (!caughtErr || (caughtErr && curDir === path.resolve(targetDir))) {
+        throw err; // Throw if it's just the last created dir.
+      }
+    }
+
+    return curDir;
+  }, initDir);
+}
+
+let homeDir = process.env.HOME;
+if (os.homedir) {
+  homeDir = os.homedir();
+}
+
+let argv = {};
+if (process.argv) {
+  argv = require('minimist')(process.argv.slice(2));
+}
+
 /*
   --deviceToken
   -t
@@ -17,78 +58,94 @@ const LOTUN_URL = 'dashboard.dev.lotun.io';
 let config;
 let lastError;
 
-const generateDeviceToken = async () => {
-  let token = null;
-  /* eslint-disable no-await-in-loop */
-  while (!token) {
+const generateDeviceToken = () => {
+  // @TODO attempt limit
+  return new Promise((resolve, reject) => {
+    function attempt() {
+      lotunClient
+        .getNewDeviceToken()
+        .then(deviceToken => {
+          resolve(deviceToken);
+        })
+        .catch(err => {
+          setTimeout(() => {
+            attempt();
+          }, 5000);
+        });
+    }
+    attempt();
+  });
+};
+
+const getDeviceToken = () => {
+  return new Promise((resolve, reject) => {
+    let data;
+    log(chalk`Reading configuration from {yellow.bold ${config}}\n`);
     try {
-      token = await lotunClient.getNewDeviceToken();
+      data = fs.readFileSync(config);
+      try {
+        data = JSON.parse(data);
+        if (!data || !data.deviceToken) {
+          reject(chalk.redBright(`Cannot read from config ${config} - corrupted file.`));
+        }
+        resolve(data);
+      } catch (err) {
+        error(err);
+        reject(new Error(`Cannot read data from config ${config}.`));
+      }
     } catch (err) {
-      await new Promise(resolve => {
-        setTimeout(() => {
-          resolve();
-        }, 5000);
+      // file not exists, create file and fetch token
+      log(chalk.bgYellowBright('Generating new device token.\n'));
+      generateDeviceToken().then(deviceToken => {
+        data = {
+          deviceToken,
+        };
+
+        try {
+          fs.writeFileSync(config, JSON.stringify(data));
+          resolve(data);
+        } catch (e) {
+          error(e);
+          reject(new Error(`Cannot write to config ${config}`));
+        }
       });
-      /* eslint-enable no-await-in-loop */
     }
-  }
-  return token;
+  }).then(data => {
+    return data.deviceToken;
+  });
 };
 
-const getDeviceToken = async () => {
-  let data;
-  log(chalk`Reading configuration from {yellow.bold ${config}}\n`);
-  try {
-    data = fs.readFileSync(config);
-    try {
-      data = JSON.parse(data);
-    } catch (err) {
-      error(err);
-      throw new Error(`Cannot read data from config ${config}.`);
-    }
-  } catch (err) {
-    // file not exists, create file and fetch token
-    log(chalk.bgYellowBright('Generating new device token.\n'));
-    const deviceToken = await generateDeviceToken();
-
-    data = {
-      deviceToken,
-    };
-
-    try {
-      fs.writeFileSync(config, JSON.stringify(data));
-    } catch (e) {
-      error(e);
-      throw new Error(`Cannot write to config ${config}`);
-    }
+new Promise((resolve, reject) => {
+  if (argv.c || argv.config) {
+    config = path.normalize(argv.c || argv.config);
+  } else {
+    const configDir = path.join(homeDir, '.lotun');
+    mkDirByPathSync(configDir);
+    config = path.join(configDir, 'config.json');
   }
-  if (!data || !data.deviceToken) {
-    throw new Error(chalk.redBright(`Cannot read from config ${config} - corrupted file.`));
+  let deviceToken = null;
+  if (argv.t || argv.deviceToken) {
+    deviceToken = argv.t || argv.deviceToken;
+    resolve(deviceToken);
+  } else {
+    getDeviceToken()
+      .then(resolve)
+      .catch(reject);
   }
-  return data.deviceToken;
-};
-
-(async () => {
-  try {
-    if (argv.c || argv.config) {
-      config = path.normalize(argv.c || argv.config);
-    } else {
-      config = path.join(os.homedir(), '.lotun');
-    }
-    let deviceToken = null;
-    if (argv.t || argv.deviceToken) {
-      deviceToken = argv.t || argv.deviceToken;
-    } else {
-      deviceToken = await getDeviceToken();
-    }
+})
+  .then(deviceToken => {
     lotunClient.setDeviceToken(deviceToken);
-    lotunClient.on('connected', () => {
+    lotunClient.on('connect', () => {
       log(chalk.greenBright('Device connected, setup your device from Dashboard:'));
       log(chalk.underline(`https://${LOTUN_URL}`));
     });
 
-    lotunClient.on('closeReason', message => {
-      if (message.code === errorCodes.DEVICE_TOKEN_UNPAIRED && lastError !== message.code) {
+    lotunClient.on('error', err => {
+      //console.error(err);
+    });
+
+    lotunClient.on('close', (code, reason) => {
+      if (reason === 'DEVICE_TOKEN_UNPAIRED') {
         const encodedToken = encodeURIComponent(deviceToken);
         const encodedHostname = encodeURIComponent(os.hostname());
         log(
@@ -96,16 +153,11 @@ const getDeviceToken = async () => {
         );
         log(`https://${LOTUN_URL}/devices/new?token=${encodedToken}&name=${encodedHostname}`);
       }
-
-      lastError = message.code;
+      lastError = reason;
     });
 
-    lotunClient.on('error', () => {});
-
-    lotunClient.on('close', () => {});
-
     lotunClient.connect();
-  } catch (err) {
+  })
+  .catch(err => {
     error(err);
-  }
-})();
+  });
