@@ -58,9 +58,9 @@ const LOTUN_URL = 'dashboard.dev.lotun.io';
 let config;
 let lastError;
 
-const generateDeviceToken = () => {
+const generateDeviceToken = () => 
   // @TODO attempt limit
-  return new Promise((resolve, reject) => {
+   new Promise((resolve, reject) => {
     function attempt() {
       lotunClient
         .getNewDeviceToken()
@@ -74,11 +74,10 @@ const generateDeviceToken = () => {
         });
     }
     attempt();
-  });
-};
+  })
+;
 
-const getDeviceToken = () => {
-  return new Promise((resolve, reject) => {
+const getDeviceToken = () => new Promise((resolve, reject) => {
     let data;
     log(chalk`Reading configuration from {yellow.bold ${config}}\n`);
     try {
@@ -110,10 +109,7 @@ const getDeviceToken = () => {
         }
       });
     }
-  }).then(data => {
-    return data.deviceToken;
-  });
-};
+  }).then(data => data.deviceToken);
 
 new Promise((resolve, reject) => {
   if (argv.c || argv.config) {
@@ -141,7 +137,7 @@ new Promise((resolve, reject) => {
     });
 
     lotunClient.on('error', err => {
-      //console.error(err);
+      // console.error(err);
     });
 
     lotunClient.on('close', (code, reason) => {

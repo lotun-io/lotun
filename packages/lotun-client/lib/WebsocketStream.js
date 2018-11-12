@@ -337,8 +337,8 @@ class WebsocketStream extends EventEmitter {
   }
 
   static encodeMessage(headerObject, buffer = Buffer.from('')) {
-    //console.log('encodeMessage');
-    //console.log(buffer.toString().replace(/\r/g, 'R').replace(/\n/g, 'N'),);
+    // console.log('encodeMessage');
+    // console.log(buffer.toString().replace(/\r/g, 'R').replace(/\n/g, 'N'),);
     const header = Buffer.from(JSON.stringify(headerObject));
     const length = Buffer.from(String(header.length));
     return Buffer.concat([length, header, buffer]);

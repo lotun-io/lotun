@@ -2,9 +2,10 @@
 const net = require('net');
 const tls = require('tls');
 const WebSocket = require('ws');
-const clientVersion = require(`${__dirname}/../package.json`).version;
 
-//const WebsocketStream = require(process.cwd() + '/../lotun-be/lib/core/server/common/WebsocketStream.js');
+const clientVersion = require('../package.json').version;
+
+// const WebsocketStream = require(process.cwd() + '/../lotun-be/lib/core/server/common/WebsocketStream.js');
 const WebsocketStream = require('./WebsocketStream.js');
 
 /*
@@ -20,7 +21,7 @@ const createSocketConnection = () => {
     headers: {
       authorization: lotunClient.deviceToken,
     },
-    //agent: usProxyAgent,
+    // agent: usProxyAgent,
   });
 
   const wsStream = new WebsocketStream(ws, 'client');
@@ -115,8 +116,8 @@ const createSocketConnection = () => {
     reconnectHappend = true;
   };
 
-  const wsOnError = err => {
-    //lotunClient.emit('error', err);
+  const wsOnError = () => {
+    // lotunClient.emit('error', err);
     ws.terminate();
   };
 
