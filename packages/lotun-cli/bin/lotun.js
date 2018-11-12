@@ -58,26 +58,26 @@ const LOTUN_URL = 'dashboard.dev.lotun.io';
 let config;
 let lastError;
 
-const generateDeviceToken = () => 
+const generateDeviceToken = () =>
   // @TODO attempt limit
-   new Promise((resolve, reject) => {
+  new Promise(resolve => {
     function attempt() {
       lotunClient
         .getNewDeviceToken()
         .then(deviceToken => {
           resolve(deviceToken);
         })
-        .catch(err => {
+        .catch(() => {
           setTimeout(() => {
             attempt();
           }, 5000);
         });
     }
     attempt();
-  })
-;
+  });
 
-const getDeviceToken = () => new Promise((resolve, reject) => {
+const getDeviceToken = () =>
+  new Promise((resolve, reject) => {
     let data;
     log(chalk`Reading configuration from {yellow.bold ${config}}\n`);
     try {
@@ -136,12 +136,12 @@ new Promise((resolve, reject) => {
       log(chalk.underline(`https://${LOTUN_URL}`));
     });
 
-    lotunClient.on('error', err => {
+    lotunClient.on('error', () => {
       // console.error(err);
     });
 
     lotunClient.on('close', (code, reason) => {
-      if (reason === 'DEVICE_TOKEN_UNPAIRED') {
+      if (reason === 'DEVICE_TOKEN_UNPAIRED' && lastError !== reason) {
         const encodedToken = encodeURIComponent(deviceToken);
         const encodedHostname = encodeURIComponent(os.hostname());
         log(
