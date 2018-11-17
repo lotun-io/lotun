@@ -1,155 +1,173 @@
 /* eslint-disable no-console */
 const net = require('net');
+const tls = require('tls');
 const WebSocket = require('ws');
-const systemInfo = require('./system-info');
-const WebsocketStream = require('./websocket-stream');
+
+const clientVersion = require('../package.json').version;
+
+// const WebsocketStream = require(process.cwd() + '/../lotun-be/lib/core/server/common/WebsocketStream.js');
+const WebsocketStream = require('./WebsocketStream.js');
+
+/*
+const HttpsProxyAgent = require('https-proxy-agent');
+const usProxyAgent = new HttpsProxyAgent('http://12.131.182.225:38606');
+*/
 
 let lotunClient = null;
-
-function createSocketStreamOut(message) {
-  const socketStream = new WebSocket(
-    `ws://${message.hostname}/wsDeviceStreamOut?deviceToken=${lotunClient.deviceToken}`,
-  );
-  const websocketStream = new WebsocketStream(socketStream);
-
-  let pingInterval = null;
-  let lastStreamDate = new Date();
-  websocketStream.once('open', () => {
-    websocketStream.on('stream', () => {
-      lastStreamDate = new Date();
-    });
-    pingInterval = setInterval(() => {
-      const timeoutDate = new Date();
-      timeoutDate.setSeconds(timeoutDate.getSeconds() - 5);
-      // @TODO check last stream createdAt
-      if (websocketStream.stream || lastStreamDate > timeoutDate) {
-        // websocketStream.socket.ping();
-      }
-    }, 5000);
-  });
-
-  websocketStream.once('error', () => {});
-
-  websocketStream.once('close', () => {
-    if (pingInterval) {
-      clearInterval(pingInterval);
-    }
-  });
-
-  // appPrivate.websocketStream = websocketStream
-
-  websocketStream.on('stream', options => {
-    // make ping ?!
-    const { stream, header } = options;
-
-    const socket = new net.Socket();
-    socket.pipe(stream).pipe(socket);
-
-    const { forward } = header.data;
-
-    socket.connect({
-      host: forward.hostname,
-      port: forward.port,
-    });
-
-    /*
-    stream.on('end', () => {
-      console.log('stream.end')
-    })
-
-    stream.on('finish', () => {
-      console.log('stream.finish')
-    })
-
-    stream.on('unpipe', () => {
-      console.log('stream.unpipe')
-    })
-
-    stream.on('close', () => {
-      console.log('stream.close')
-    })
-    */
-
-    socket.on('error', err => {
-      // console.log('socket.error');
-      stream.sendError(err);
-      socket.destroy();
-    });
-
-    stream.on('error', () => {
-      stream.destroy();
-    });
-  });
-
-  // return socketStream
-}
-
-const appPrivate = require('./app-private');
+// const appPrivate = require('./app-private');
 
 const createSocketConnection = () => {
-  // console.log(`${lotunClient.connectUrl}/wsClient?deviceToken=${lotunClient.deviceToken}`)
-  const socket = new WebSocket(`${lotunClient.connectUrl}/wsDeviceMaster?deviceToken=${lotunClient.deviceToken}`);
-  let pingInterval = null;
-
-  socket.on('open', async () => {
-    pingInterval = setInterval(() => {
-      socket.ping();
-      // @TODO check timeout and close !
-    }, 1000);
+  const ws = new WebSocket(`${lotunClient.connectUrl}`, {
+    headers: {
+      authorization: lotunClient.deviceToken,
+    },
+    // agent: usProxyAgent,
   });
 
-  socket.on('pong', () => {
-    // check client pongs for timeout !
-    // console.log('pong !')
+  const wsStream = new WebsocketStream(ws, 'client');
+
+  wsStream.on('stream', options => {
+    // console.log('stream');
+    const { stream, header } = options;
+    const forward = header;
+
+    // console.log('forward', forward);
+
+    let socket = null;
+    if (forward.type === 'TCP') {
+      socket = net.connect(forward.socketOptions);
+    } else if (forward.type === 'TLS') {
+      socket = tls.connect({
+        ...forward.socketOptions,
+        ...forward.tlsOptions,
+      });
+    } else {
+      // not supported
+      stream.destroy();
+      return;
+    }
+
+    const socketOnError = err => {
+      // console.log('socket.error');
+      stream.sendError(err);
+      stream.destroy();
+      socket.destroy();
+    };
+
+    const socketOnTimeout = () => {
+      socket.close();
+      socket.destroy();
+    };
+
+    socket.on('error', socketOnError);
+    socket.on('timeout', socketOnTimeout);
+    socket.once('close', () => {
+      // console.log('close');
+      socket.removeListener('error', socketOnError);
+      socket.removeListener('timeout', socketOnTimeout);
+    });
+
+    if (forward.timeout) {
+      socket.setTimeout(forward.timeout);
+    }
+
+    if (forward.keepAlive) {
+      socket.setKeepAlive(true, forward.keepAlive);
+    }
+
+    socket.pipe(stream).pipe(socket);
   });
 
-  socket.on('message', async data => {
-    const message = JSON.parse(data);
-    if (message.type === 'closeReason') {
-      lotunClient.emit('closeReason', message);
+  wsStream.on('message', message => {
+    if (message.type === 'connect') {
+      lotunClient.emit('connect');
     }
 
-    if (message.type === 'ready') {
-      lotunClient.emit('connected');
-    }
-
+    /*
     if (message.type === 'getSystemInfo') {
       const sysInfo = await systemInfo();
-      socket.send(
+      ws.send(
         JSON.stringify({
           type: 'SystemInfo',
           data: sysInfo,
         }),
       );
     }
-
-    if (message.type === 'appsPrivate') {
-      appPrivate.closeAll();
-      message.data.forEach(one => {
-        appPrivate.createServer(one);
-      });
-    }
-
-    if (message.type === 'StreamOutCreate') {
-      // console.log('StreamOutCreate');
-      // console.log(message);
-      createSocketStreamOut(message);
-    }
+    */
   });
 
-  socket.on('error', err => {
-    lotunClient.emit('error', err);
-    socket.emit('close', err);
-  });
+  let interval = null;
+  const wsOnOpen = () => {
+    // console.log('open');
+    ws.isAlive = true;
+    interval = setInterval(() => {
+      if (ws.isAlive === false) {
+        return ws.terminate();
+      }
+      ws.isAlive = false;
+      ws.ping();
+      return null;
+    }, 30000);
 
-  socket.on('close', err => {
-    if (pingInterval) {
-      clearInterval(pingInterval);
+    wsStream.send({
+      type: 'clientInfo',
+      data: {
+        version: clientVersion,
+        osInfo: {
+          test: 'test',
+        },
+      },
+    });
+  };
+
+  let reconnectHappend = false;
+  const wsReconnectOnClose = (code, reason) => {
+    if (!reconnectHappend) {
+      lotunClient.emit('close', code, reason);
+      setTimeout(() => {
+        createSocketConnection();
+      }, 5000);
+      clearInterval(interval);
     }
-    lotunClient.emit('close', err);
-    setTimeout(() => {
-      createSocketConnection();
-    }, 5000);
+    reconnectHappend = true;
+  };
+
+  const wsOnError = () => {
+    // lotunClient.emit('error', err);
+    ws.terminate();
+  };
+
+  const wsOnPong = () => {
+    ws.isAlive = true;
+  };
+
+  const wsOnUnexpectedResponse = (req, res) => {
+    let reason = '';
+    const resOnData = data => {
+      reason += data;
+    };
+    res.on('data', resOnData);
+    res.once('end', () => {
+      res.removeListener('data', resOnData);
+      req.abort();
+      wsReconnectOnClose(res.statusCode, reason);
+      ws.terminate();
+    });
+  };
+
+  ws.on('open', wsOnOpen);
+  ws.on('pong', wsOnPong);
+  ws.on('error', wsOnError);
+  ws.on('unexpected-response', wsOnUnexpectedResponse);
+
+  ws.once('close', (code, reason) => {
+    // console.log('ws.close', code, reason);
+    ws.removeListener('open', wsOnOpen);
+    ws.removeListener('pong', wsOnPong);
+    ws.removeListener('error', wsOnError);
+    ws.removeListener('unexpected-response', wsOnUnexpectedResponse);
+
+    wsReconnectOnClose(code, reason);
   });
 };
 
