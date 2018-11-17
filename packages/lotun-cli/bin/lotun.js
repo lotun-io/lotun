@@ -143,7 +143,7 @@ new Promise((resolve, reject) => {
 
     lotunClient.on('close', (code, reason) => {
       if (reason === errorCodes.DEVICE_TOKEN_UNPAIRED && lastError !== reason) {
-        const encodedToken = encodeURICmponent(deviceToken);
+        const encodedToken = encodeURIComponent(deviceToken);
         const encodedHostname = encodeURIComponent(os.hostname());
         log(
           chalk.redBright('Device is not yet paried to account, please pair your device by click on following link:'),
