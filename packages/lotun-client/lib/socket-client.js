@@ -27,39 +27,55 @@ const createSocketConnection = () => {
   const wsStream = new WebsocketStream(ws, 'client');
 
   wsStream.on('stream', options => {
-    console.log('stream');
+    //console.log('stream');
     const { stream, header } = options;
     const forward = header;
 
-    console.log('forward', forward);
+    //console.log('forward', forward);
 
-    if (forward.protocol === 'TCP') {
-      let socket = null;
-
-      if (!forward.useTLS) {
-        socket = net.connect(forward.socketOptions);
-      } else {
-        socket = tls.connect({
-          ...forward.socketOptions,
-          ...forward.tlsOptions,
-        });
-      }
-
-      const socketOnError = err => {
-        console.log('socket.error');
-        stream.sendError(err);
-        stream.destroy();
-        socket.destroy();
-      };
-
-      socket.on('error', socketOnError);
-      socket.once('close', () => {
-        console.log('close');
-        socket.removeListener('error', socketOnError);
+    let socket = null;
+    if (forward.type === 'TCP') {
+      socket = net.connect(forward.socketOptions);
+    } else if (forward.type === 'TLS') {
+      socket = tls.connect({
+        ...forward.socketOptions,
+        ...forward.tlsOptions,
       });
-
-      socket.pipe(stream).pipe(socket);
+    } else {
+      // not supported
+      stream.destroy();
+      return;
     }
+
+    const socketOnError = err => {
+      //console.log('socket.error');
+      stream.sendError(err);
+      stream.destroy();
+      socket.destroy();
+    };
+
+    const socketOnTimeout = () => {
+      socket.close();
+      socket.destroy();
+    };
+
+    socket.on('error', socketOnError);
+    socket.on('timeout', socketOnTimeout);
+    socket.once('close', () => {
+      //console.log('close');
+      socket.removeListener('error', socketOnError);
+      socket.removeListener('timeout', socketOnTimeout);
+    });
+
+    if (forward.timeout) {
+      socket.setTimeout(forward.timeout);
+    }
+
+    if (forward.keepAlive) {
+      socket.setKeepAlive(true, forward.keepAlive);
+    }
+
+    socket.pipe(stream).pipe(socket);
   });
 
   wsStream.on('message', message => {
@@ -82,7 +98,7 @@ const createSocketConnection = () => {
 
   let interval = null;
   const wsOnOpen = () => {
-    console.log('open');
+    //console.log('open');
     ws.isAlive = true;
     interval = setInterval(() => {
       if (ws.isAlive === false) {
@@ -145,7 +161,7 @@ const createSocketConnection = () => {
   ws.on('unexpected-response', wsOnUnexpectedResponse);
 
   ws.once('close', (code, reason) => {
-    console.log('ws.close', code, reason);
+    //console.log('ws.close', code, reason);
     ws.removeListener('open', wsOnOpen);
     ws.removeListener('pong', wsOnPong);
     ws.removeListener('error', wsOnError);

@@ -142,13 +142,17 @@ new Promise((resolve, reject) => {
 
     lotunClient.on('close', (code, reason) => {
       if (reason === 'DEVICE_TOKEN_UNPAIRED' && lastError !== reason) {
-        const encodedToken = encodeURIComponent(deviceToken);
+        const encodedToken = encodeURICmponent(deviceToken);
         const encodedHostname = encodeURIComponent(os.hostname());
         log(
           chalk.redBright('Device is not yet paried to account, please pair your device by click on following link:'),
         );
         log(`https://${LOTUN_URL}/devices/new?token=${encodedToken}&name=${encodedHostname}`);
       }
+      if (reason === 'DEVICE_TOKEN_INVALID' && lastError !== reason) {
+        log(chalk.redBright('Your device token is invalid.'));
+      }
+
       lastError = reason;
     });
 
