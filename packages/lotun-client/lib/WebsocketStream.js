@@ -41,7 +41,7 @@ class DuplexStream extends Duplex {
   }
 
   destroy() {
-    console.log('DuplexStream.destroy');
+    // console.log('DuplexStream.destroy');
     if (!this.___destroyCalled) {
       if (!this._readableState.ended) {
         this.push(null);
@@ -53,7 +53,7 @@ class DuplexStream extends Duplex {
   }
 
   _cleanUp() {
-    console.log('cleanUp');
+    // console.log('cleanUp');
     if (!this.___cleanUpCalled) {
       this.___cleanUpCalled = true;
       this.websocketStream._deleteStream(this.streamId);
@@ -111,7 +111,7 @@ class DuplexStream extends Duplex {
       this.websocketStream.ws &&
       this.websocketStream.ws.readyState === this.websocketStream.ws.OPEN;
     if (!canWrite) {
-      console.log('cannot write !');
+      // console.log('cannot write !');
     }
     return canWrite;
     // return true
@@ -131,7 +131,7 @@ class DuplexStream extends Duplex {
   }
 
   _final(callback) {
-    console.log('DuplexStream.final');
+    // console.log('DuplexStream.final');
     if (this._canWrite()) {
       const message = this.websocketStream.constructor.encodeMessage({
         type: 'stream.final',
