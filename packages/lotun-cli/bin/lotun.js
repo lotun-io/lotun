@@ -55,7 +55,7 @@ if (process.argv) {
 
 const lotunClient = client.create();
 const { log, error } = console;
-const LOTUN_URL = null;
+let LOTUN_URL = null;
 if (process.env.NODE_ENV === 'devel') {
   LOTUN_URL = 'dashboard.dev.lotun.io';
 } else {
