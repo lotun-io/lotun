@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const { client, errorCodes } = require('@lotun/client');
+const minimist = require('minimist');
 
 function mkDirByPathSync(targetDir, { isRelativeToScript = false } = {}) {
   const sep = path.sep;
@@ -42,7 +43,7 @@ if (os.homedir) {
 
 let argv = {};
 if (process.argv) {
-  argv = require('minimist')(process.argv.slice(2));
+  argv = minimist(process.argv.slice(2));
 }
 
 /*
@@ -141,7 +142,7 @@ new Promise((resolve, reject) => {
     });
 
     lotunClient.on('close', (code, reason) => {
-      if (reason === 'DEVICE_TOKEN_UNPAIRED' && lastError !== reason) {
+      if (reason === errorCodes.DEVICE_TOKEN_UNPAIRED && lastError !== reason) {
         const encodedToken = encodeURICmponent(deviceToken);
         const encodedHostname = encodeURIComponent(os.hostname());
         log(
@@ -149,7 +150,7 @@ new Promise((resolve, reject) => {
         );
         log(`https://${LOTUN_URL}/devices/new?token=${encodedToken}&name=${encodedHostname}`);
       }
-      if (reason === 'DEVICE_TOKEN_INVALID' && lastError !== reason) {
+      if (reason === errorCodes.DEVICE_TOKEN_INVALID && lastError !== reason) {
         log(chalk.redBright('Your device token is invalid.'));
       }
 

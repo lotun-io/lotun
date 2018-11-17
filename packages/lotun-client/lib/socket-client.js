@@ -27,11 +27,11 @@ const createSocketConnection = () => {
   const wsStream = new WebsocketStream(ws, 'client');
 
   wsStream.on('stream', options => {
-    //console.log('stream');
+    // console.log('stream');
     const { stream, header } = options;
     const forward = header;
 
-    //console.log('forward', forward);
+    // console.log('forward', forward);
 
     let socket = null;
     if (forward.type === 'TCP') {
@@ -48,7 +48,7 @@ const createSocketConnection = () => {
     }
 
     const socketOnError = err => {
-      //console.log('socket.error');
+      // console.log('socket.error');
       stream.sendError(err);
       stream.destroy();
       socket.destroy();
@@ -62,7 +62,7 @@ const createSocketConnection = () => {
     socket.on('error', socketOnError);
     socket.on('timeout', socketOnTimeout);
     socket.once('close', () => {
-      //console.log('close');
+      // console.log('close');
       socket.removeListener('error', socketOnError);
       socket.removeListener('timeout', socketOnTimeout);
     });
@@ -98,7 +98,7 @@ const createSocketConnection = () => {
 
   let interval = null;
   const wsOnOpen = () => {
-    //console.log('open');
+    // console.log('open');
     ws.isAlive = true;
     interval = setInterval(() => {
       if (ws.isAlive === false) {
@@ -161,7 +161,7 @@ const createSocketConnection = () => {
   ws.on('unexpected-response', wsOnUnexpectedResponse);
 
   ws.once('close', (code, reason) => {
-    //console.log('ws.close', code, reason);
+    // console.log('ws.close', code, reason);
     ws.removeListener('open', wsOnOpen);
     ws.removeListener('pong', wsOnPong);
     ws.removeListener('error', wsOnError);
