@@ -107,8 +107,8 @@ lotunClient.on('connect', () => {
   lastError = null;
 });
 
-lotunClient.on('error', err => {
-  //console.error(err);
+lotunClient.on('error', () => {
+  // console.error(err);
 });
 
 autoUpdater.on('update-available', () => {
