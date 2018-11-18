@@ -21,6 +21,10 @@ const DEFAULT_CONTEXT_MENU = [
         label: 'Open at login',
         checked: app.getLoginItemSettings().openAtLogin,
         click: menuItem => {
+          app.setLoginItemSettings({
+            openAtLogin: menuItem.checked,
+          });
+          /*
           if (!menuItem.checked) {
             if (platform === 'darwin') {
               exec(`osascript -e 'tell application "System Events" to delete login item "${app.getName()}"'`);
@@ -30,6 +34,7 @@ const DEFAULT_CONTEXT_MENU = [
               openAtLogin: menuItem.checked,
             });
           }
+          */
         },
       },
     ],
