@@ -1,5 +1,5 @@
 {
-  "name": "@lotun/app",
+  "name": "lotun-app",
   "author": "FreshIT, s.r.o.",
   "version": "0.0.1",
   "main": "app/main.js",
@@ -10,15 +10,15 @@
   },
   "scripts": {
     "start": "electron .",
-    "build:publish": "electron-builder -p=always -m -w",
-    "build": "electron-builder -m -w"
+    "build:publish": "electron-builder -p=always -mwl",
+    "build": "electron-builder -mwl"
   },
   "devDependencies": {
-    "electron": "^2.0.3",
-    "electron-builder": "^20.19.2"
+    "electron": "^3.0.9",
+    "electron-builder": "^20.36.2"
   },
   "dependencies": {
     "@lotun/client": "^0.0.1",
-    "electron-updater": "^3.0.3"
+    "electron-updater": "^4.0.4"
   }
 }
