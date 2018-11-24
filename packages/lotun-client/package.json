@@ -3,7 +3,7 @@
   "author": "FreshIT, s.r.o.",
   "license": "MIT",
   "main": "lib/index.js",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/lotun-io/lotun/tree/master/packages/lotun-client"

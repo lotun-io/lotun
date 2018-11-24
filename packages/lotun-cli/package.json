@@ -1,6 +1,7 @@
 {
   "name": "@lotun/cli",
   "author": "FreshIT, s.r.o.",
+  "version": "0.0.3",
   "main": "bin/lotun.js",
   "license": "MIT",
   "files": [
