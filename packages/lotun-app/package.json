@@ -18,7 +18,7 @@
     "electron-builder": "^20.36.2"
   },
   "dependencies": {
-    "@lotun/client": "^0.0.1",
+    "@lotun/client": "^0.0.3",
     "electron-updater": "^4.0.4"
   }
 }

@@ -18,7 +18,7 @@
     "url": "https://github.com/lotun-io/lotun/tree/master/packages/lotun-cli"
   },
   "dependencies": {
-    "@lotun/client": "^0.0.1",
+    "@lotun/client": "^0.0.3",
     "chalk": "^2.4.1",
     "minimist": "^1.2.0"
   }
