@@ -65,9 +65,9 @@ if (process.env.NODE_ENV === 'devel') {
 let config;
 let lastError;
 
-const generateDeviceToken = () =>
+function generateDeviceToken() {
   // @TODO attempt limit
-  new Promise(resolve => {
+  return new Promise(resolve => {
     function attempt() {
       lotunClient
         .getNewDeviceToken()
@@ -82,7 +82,7 @@ const generateDeviceToken = () =>
     }
     attempt();
   });
-
+}
 const getDeviceToken = () =>
   new Promise((resolve, reject) => {
     let data;

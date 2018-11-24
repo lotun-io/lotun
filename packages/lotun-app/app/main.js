@@ -46,6 +46,25 @@ function mkDirByPathSync(targetDir, { isRelativeToScript = false } = {}) {
 
 const lotunClient = client.create();
 
+function generateDeviceToken() {
+  // @TODO attempt limit
+  return new Promise(resolve => {
+    function attempt() {
+      lotunClient
+        .getNewDeviceToken()
+        .then(deviceToken => {
+          resolve(deviceToken);
+        })
+        .catch(() => {
+          setTimeout(() => {
+            attempt();
+          }, 5000);
+        });
+    }
+    attempt();
+  });
+}
+
 app.on('ready', async () => {
   tray = new Tray(trayIcons.BASE_ICON);
   tray.setPressedImage(trayIcons.BASE_ICON_PRESSED);
@@ -57,7 +76,7 @@ app.on('ready', async () => {
     lotunClient.setDeviceToken(token);
   } catch (e) {
     mkDirByPathSync(LOTUN_DIR);
-    token = await lotunClient.getNewDeviceToken();
+    token = await generateDeviceToken();
     const data = { deviceToken: token };
 
     fs.writeFileSync(LOTUN_FILE, JSON.stringify(data));
