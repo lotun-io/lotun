@@ -123,8 +123,12 @@ new Promise((resolve, reject) => {
     config = path.normalize(argv.c || argv.config);
   } else {
     const configDir = path.join(homeDir, '.lotun');
+    let configFile = 'config.json';
+    if (process.env.NODE_ENV === 'devel') {
+      configFile = 'devel-config.json';
+    }
     mkDirByPathSync(configDir);
-    config = path.join(configDir, 'config.json');
+    config = path.join(configDir, configFile);
   }
   let deviceToken = null;
   if (argv.t || argv.deviceToken) {

@@ -23,7 +23,14 @@ const trayIcons = {
     path.resolve(getResourcesPath(), './assets/icons/tray-icon-warning-pressed.png'),
   ),
 };
-const LOTUN_FILE = path.resolve(app.getPath('home'), '.lotun', 'config.json');
+
+let configFile = 'config.json';
+
+if (process.env && process.env.NODE_ENV && process.env.NODE_ENV === 'devel') {
+  configFile = 'devel-config.json';
+}
+
+const LOTUN_FILE = path.resolve(app.getPath('home'), '.lotun', configFile);
 const LOTUN_DIR = path.resolve(app.getPath('home'), '.lotun');
 let LOTUN_URL = 'lotun.io';
 if (process.env && process.env.NODE_ENV) {
