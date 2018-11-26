@@ -1,7 +1,7 @@
 {
   "name": "@lotun/cli",
   "author": "FreshIT, s.r.o.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "bin/lotun.js",
   "license": "MIT",
   "files": [
@@ -18,7 +18,7 @@
     "url": "https://github.com/lotun-io/lotun/tree/master/packages/lotun-cli"
   },
   "dependencies": {
-    "@lotun/client": "^0.0.3",
+    "@lotun/client": "^0.0.4",
     "chalk": "^2.4.1",
     "minimist": "^1.2.0"
   }
