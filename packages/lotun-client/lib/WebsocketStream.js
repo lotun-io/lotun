@@ -20,6 +20,7 @@ class DuplexStream extends Duplex {
 
     const duplexOnEnd = () => {
       endCalled = true;
+      this.__endCalled = true;
       if (endCalled && finishCalled) {
         this._cleanUp();
       }
@@ -27,6 +28,7 @@ class DuplexStream extends Duplex {
 
     const duplexOnFinish = () => {
       finishCalled = true;
+      this.__finishCalled = true;
       if (endCalled && finishCalled) {
         this._cleanUp();
       }
@@ -43,11 +45,8 @@ class DuplexStream extends Duplex {
   destroy() {
     // console.log('DuplexStream.destroy');
     if (!this.___destroyCalled) {
-      if (!this._readableState.ended) {
+      if (!this.__endCalled) {
         this.push(null);
-      }
-      if (this._cb) {
-        this._cb();
       }
     }
   }
@@ -238,7 +237,7 @@ class WebsocketStream extends EventEmitter {
       if (message.header.type === 'stream.ack') {
         const stream = this._getStream(message.header.streamId);
         if (stream && stream._cb) {
-          const cb = stream._cb();
+          const cb = stream._cb;
           stream._cb = null;
           stream.___writeWaitForAck = false;
           cb();
@@ -248,7 +247,7 @@ class WebsocketStream extends EventEmitter {
       if (message.header.type === 'stream.final') {
         const stream = this._getStream(message.header.streamId);
         if (stream) {
-          if (!stream._readableState.ended) {
+          if (!stream.__endCalled) {
             stream.push(null);
           }
         }
