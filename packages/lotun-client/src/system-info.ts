@@ -1,20 +1,15 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const systeminformation_1 = __importDefault(require("systeminformation"));
-async function getSystemInfo() {
-    let os = {};
-    try {
-        os = await systeminformation_1.default.osInfo();
-    }
-    catch (_a) { }
-    return {
-        os,
-    };
+import si from 'systeminformation';
+
+export async function getSystemInfo() {
+  let os = {};
+  try {
+    os = await si.osInfo();
+  } catch {}
+
+  return {
+    os,
+  };
 }
-exports.getSystemInfo = getSystemInfo;
 /*
 const defaultGateway = require('default-gateway');
 const arp = require('arp');
@@ -76,4 +71,3 @@ export function getSystemInfo() {
   
 }
 */
-//# sourceMappingURL=system-info.js.map

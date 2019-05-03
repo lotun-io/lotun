@@ -1,4 +1,3 @@
-"use strict";
 /*
 const net = require('net');
 
@@ -36,4 +35,3 @@ class AppPrivate {
 
 module.exports = new AppPrivate();
 */
-//# sourceMappingURL=app-private.js.map
