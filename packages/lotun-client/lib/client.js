@@ -34,8 +34,8 @@ class LotunClient extends events_1.default {
           `,
             },
         });
-        if (res.data && res.data.generateDeviceToken) {
-            return res.data.generateDeviceToken.token;
+        if (res.data && res.data.data && res.data.data.generateDeviceToken) {
+            return res.data.data.generateDeviceToken.token;
         }
         else {
             throw new Error('Cannot generate token');
