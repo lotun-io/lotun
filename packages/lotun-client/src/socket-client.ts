@@ -3,30 +3,29 @@ import tls from 'tls';
 import WebSocket from 'ws';
 import { LotunClient } from './client';
 import { getSystemInfo } from './system-info';
+import { WebsocketStream, ClientError } from './wsStream/WsStream';
+import { version as WsStreamVersion } from './wsStream/WsStream';
 
 const clientVersion = require('../package.json').version;
-
-// const WebsocketStream = require(process.cwd() + '/../lotun-be/lib/core/server/common/WebsocketStream.js');
-import { WebsocketStream, ClientError } from './wsStream/WsStream';
-const WebsocketStreamVersion = require(`${__dirname}/wsStream/WsStream`).version;
 
 /*
 const HttpsProxyAgent = require('https-proxy-agent');
 const usProxyAgent = new HttpsProxyAgent('http://12.131.182.225:38606');
 */
 
-let lotunClient: LotunClient;
+// let lotunClient: LotunClient;
 // const appPrivate = require('./app-private');
 
-const createSocketConnection = () => {
+const createSocketConnection = (lotunClient: LotunClient) => {
   const ws = new WebSocket(`${lotunClient.connectUrl}`, {
+    handshakeTimeout: 10000,
     headers: {
       authorization: lotunClient.deviceToken || '',
-      'x-ws-stream-version': WebsocketStreamVersion,
+      'x-ws-stream-version': WsStreamVersion,
       'x-lotun-client-version': clientVersion,
     },
   });
-  // @TODO auto detect client / server
+
   const wsStream = new WebsocketStream(ws);
 
   wsStream.on('stream', (options: any) => {
@@ -86,20 +85,17 @@ const createSocketConnection = () => {
     }
   });
 
-  // let interval = null;
+  function heartbeat() {
+    // @ts-ignore
+    clearTimeout(ws.pingTimeout);
+    // @ts-ignore
+    ws.pingTimeout = setTimeout(() => {
+      ws.terminate();
+    }, 15000);
+  }
+
   const wsOnOpen = async () => {
-    // console.log('open');
-    /*
-    ws.isAlive = true;
-    interval = setInterval(() => {
-      if (ws.isAlive === false) {
-        return ws.terminate();
-      }
-      ws.isAlive = false;
-      ws.ping();
-      return null;
-    }, 30000);
-    */
+    heartbeat();
 
     wsStream.send({
       type: 'clientInfo',
@@ -109,29 +105,27 @@ const createSocketConnection = () => {
     });
   };
 
+  const wsOnPing = async () => {
+    heartbeat();
+  };
+
   const wsReconnectOnClose = (code: any, reason: any) => {
     lotunClient.emit('close', code, reason);
 
     setTimeout(() => {
-      createSocketConnection();
+      createSocketConnection(lotunClient);
     }, 5000);
-    //clearInterval(interval);
   };
 
   const wsOnError = () => {
-    // lotunClient.emit('error', err);
     ws.terminate();
   };
 
-  const wsOnPong = () => {
-    //ws.isAlive = true;
-  };
-
   ws.on('open', wsOnOpen);
-  ws.on('pong', wsOnPong);
+  ws.on('ping', wsOnPing);
   ws.on('error', wsOnError);
 
-  ws.once('close', async (code, reason) => {
+  ws.on('close', async (code, reason) => {
     if (code === 1006) {
       try {
         // @ts-ignore
@@ -143,15 +137,10 @@ const createSocketConnection = () => {
       reason = <ClientError>'CONNECTION_ERROR';
     }
 
-    ws.removeListener('open', wsOnOpen);
-    ws.removeListener('pong', wsOnPong);
-    ws.removeListener('error', wsOnError);
-
     wsReconnectOnClose(code, reason);
   });
 };
 
 export function createConnection(lc: LotunClient) {
-  lotunClient = lc;
-  createSocketConnection();
+  createSocketConnection(lc);
 }

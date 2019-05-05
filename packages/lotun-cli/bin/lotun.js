@@ -99,7 +99,6 @@ async function main() {
     else {
         deviceToken = await getDeviceToken();
     }
-    console.log(deviceToken);
     lotunClient.setDeviceToken(deviceToken);
     lotunClient.on('connect', () => {
         log(chalk_1.default.greenBright('Device connected, setup your device from Dashboard:'));
