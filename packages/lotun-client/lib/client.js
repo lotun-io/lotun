@@ -17,7 +17,7 @@ class LotunClient extends events_1.default {
             baseUrl = 'loc.lotun.io';
         }
         this.connectUrl = `wss://device.${baseUrl}`;
-        this.connectUrlApi = `https://api.${baseUrl}`;
+        this.connectUrlApi = `https://api.${baseUrl}/graphql`;
         this.dashboardUrl = `https://dashboard.${baseUrl}`;
     }
     async generateDeviceToken() {

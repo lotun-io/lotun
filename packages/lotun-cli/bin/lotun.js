@@ -82,6 +82,8 @@ async function getDeviceToken() {
 async function main() {
     if (argv.c || argv.config) {
         config = path_1.default.normalize(argv.c || argv.config);
+        const configDir = path_1.default.dirname(config);
+        fs_1.default.mkdirSync(configDir, { recursive: true });
     }
     else {
         const configDir = path_1.default.join(homeDir, '.lotun');

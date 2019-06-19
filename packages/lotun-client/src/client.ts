@@ -25,7 +25,7 @@ export class LotunClient extends EventEmitter {
     }
 
     this.connectUrl = `wss://device.${baseUrl}`;
-    this.connectUrlApi = `https://api.${baseUrl}`;
+    this.connectUrlApi = `https://api.${baseUrl}/graphql`;
     this.dashboardUrl = `https://dashboard.${baseUrl}`;
   }
 

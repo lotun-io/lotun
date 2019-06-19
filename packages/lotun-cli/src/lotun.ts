@@ -87,6 +87,8 @@ async function getDeviceToken() {
 async function main() {
   if (argv.c || argv.config) {
     config = path.normalize(argv.c || argv.config);
+    const configDir = path.dirname(config);
+    fs.mkdirSync(configDir, { recursive: true });
   } else {
     const configDir = path.join(homeDir, '.lotun');
     let configFile = 'config.json';
