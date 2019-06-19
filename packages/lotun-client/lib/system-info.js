@@ -1,18 +1,19 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const systeminformation_1 = __importDefault(require("systeminformation"));
+'use strict';
+var __importDefault =
+  (this && this.__importDefault) ||
+  function(mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
+Object.defineProperty(exports, '__esModule', { value: true });
+const systeminformation_1 = __importDefault(require('systeminformation'));
 async function getSystemInfo() {
-    let os = {};
-    try {
-        os = await systeminformation_1.default.osInfo();
-    }
-    catch (_a) { }
-    return {
-        os,
-    };
+  let os = {};
+  try {
+    os = await systeminformation_1.default.osInfo();
+  } catch (_a) {}
+  return {
+    os,
+  };
 }
 exports.getSystemInfo = getSystemInfo;
 /*
