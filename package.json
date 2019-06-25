@@ -48,7 +48,7 @@
     "graphql-client": "^2.0.1",
     "http-proxy-agent": "^2.1.0",
     "https-proxy-agent": "^2.2.1",
-    "systeminformation": "^3.45.6",
+    "systeminformation": "^4.12.2",
     "ws": "^6.1.0"
   }
 }
