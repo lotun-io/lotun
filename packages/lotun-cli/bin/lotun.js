@@ -23,8 +23,8 @@ if (process.argv) {
   -c
 */
 let stage;
-if (process.env.LOTUN_STAGE) {
-  stage = process.env.LOTUN_STAGE;
+if (process.env.LOTUN_ENV) {
+  stage = process.env.LOTUN_ENV;
 }
 const lotunClient = new client_1.LotunClient(stage);
 const { log, error } = console;

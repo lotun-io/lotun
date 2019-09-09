@@ -20,10 +20,10 @@ if (process.argv) {
   -c
 */
 
-let stage: 'devel' | 'local' | undefined;
+let stage: 'devel' | 'stage' | undefined;
 
-if (process.env.LOTUN_STAGE) {
-  stage = <'devel' | 'local'>process.env.LOTUN_STAGE;
+if (process.env.LOTUN_ENV) {
+  stage = <'devel' | 'stage'>process.env.LOTUN_ENV;
 }
 
 const lotunClient = new LotunClient(stage);

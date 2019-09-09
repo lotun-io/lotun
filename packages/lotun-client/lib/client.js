@@ -13,10 +13,10 @@ class LotunClient extends events_1.default {
     super();
     let baseUrl = 'lotun.io';
     if (stage === 'devel') {
-      baseUrl = 'dev.lotun.io';
+      baseUrl = 'devel.lotun.io';
     }
-    if (stage === 'local') {
-      baseUrl = 'loc.lotun.io';
+    if (stage === 'stage') {
+      baseUrl = 'stage.lotun.io';
     }
     this.connectUrl = `wss://device.${baseUrl}`;
     this.connectUrlApi = `https://api.${baseUrl}/graphql`;
@@ -30,14 +30,23 @@ class LotunClient extends events_1.default {
         query: `
           query {
             generateDeviceToken {
-              token
+              data {
+                token
+              }
             }
           }
           `,
       },
     });
-    if (res.data && res.data.data && res.data.data.generateDeviceToken) {
-      return res.data.data.generateDeviceToken.token;
+    console.log(res.data.data);
+    if (
+      res.data &&
+      res.data.data &&
+      res.data.data &&
+      res.data.data.generateDeviceToken &&
+      res.data.data.generateDeviceToken.data
+    ) {
+      return res.data.data.generateDeviceToken.data.token;
     } else {
       throw new Error('Cannot generate token');
     }

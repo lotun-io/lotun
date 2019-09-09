@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import EventEmitter from 'events';
 export { ClientError as LotunClientError } from './wsStream/WsStream';
-declare type StageType = 'local' | 'devel';
+declare type StageType = 'devel' | 'stage';
 export declare class LotunClient extends EventEmitter {
     connectUrl: string;
     connectUrlApi: string;

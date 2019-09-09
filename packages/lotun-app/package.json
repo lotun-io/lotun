@@ -1,7 +1,7 @@
 {
   "name": "lotun-app",
   "author": "FreshIT, s.r.o.",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "main": "app/main.js",
   "license": "MIT",
   "repository": {
@@ -18,7 +18,7 @@
     "electron-builder": "^20.36.2"
   },
   "dependencies": {
-    "@lotun/client": "^0.0.4",
+    "@lotun/client": "^1.0.0",
     "electron-updater": "^4.0.4"
   }
 }

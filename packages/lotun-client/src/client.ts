@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export { ClientError as LotunClientError } from './wsStream/WsStream';
 
-type StageType = 'local' | 'devel';
+type StageType = 'devel' | 'stage';
 export class LotunClient extends EventEmitter {
   public connectUrl: string;
   public connectUrlApi: string;
@@ -17,11 +17,11 @@ export class LotunClient extends EventEmitter {
     let baseUrl = 'lotun.io';
 
     if (stage === 'devel') {
-      baseUrl = 'dev.lotun.io';
+      baseUrl = 'devel.lotun.io';
     }
 
-    if (stage === 'local') {
-      baseUrl = 'loc.lotun.io';
+    if (stage === 'stage') {
+      baseUrl = 'stage.lotun.io';
     }
 
     this.connectUrl = `wss://device.${baseUrl}`;
@@ -37,15 +37,23 @@ export class LotunClient extends EventEmitter {
         query: `
           query {
             generateDeviceToken {
-              token
+              data {
+                token
+              }
             }
           }
           `,
       },
     });
 
-    if (res.data && res.data.data && res.data.data.generateDeviceToken) {
-      return res.data.data.generateDeviceToken.token;
+    if (
+      res.data &&
+      res.data.data &&
+      res.data.data &&
+      res.data.data.generateDeviceToken &&
+      res.data.data.generateDeviceToken.data
+    ) {
+      return res.data.data.generateDeviceToken.data.token;
     } else {
       throw new Error('Cannot generate token');
     }
