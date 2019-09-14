@@ -11,9 +11,7 @@
     "prettier": "prettier -l 'packages/**/*.js'"
   },
   "husky": {
-    "hooks": {
-      "pre-push": "npm run prettier:format && npm run lint:format"
-    }
+    "hooks": {}
   },
   "author": "FreshIT, s.r.o.",
   "license": "MIT",
@@ -31,5 +29,8 @@
     "type": "git",
     "url": "https://github.com/lotun-io/lotun"
   },
-  "description": "Monorepo for all Lotun Client packages (client, cli and electron app)"
+  "description": "Monorepo for all Lotun Client packages (client, cli and electron app)",
+  "dependencies": {
+    "babel-eslint": "^10.0.3"
+  }
 }

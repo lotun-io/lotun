@@ -29,7 +29,7 @@ const createSocketConnection = (lotunClient: LotunClient) => {
   const wsStream = new WebsocketStream(ws);
 
   wsStream.on('stream', (options: any) => {
-    // console.log('stream');
+    // console.log('stream', options.header);
     const { stream, header } = options;
     const forward = header;
 
@@ -37,11 +37,11 @@ const createSocketConnection = (lotunClient: LotunClient) => {
 
     let socket: net.Socket;
     if (forward.type === 'TCP') {
-      socket = net.connect(forward.socketOptions);
+      socket = net.connect(forward.socket);
     } else if (forward.type === 'TLS') {
       socket = tls.connect({
-        ...forward.socketOptions,
-        ...forward.tlsOptions,
+        ...forward.socket,
+        ...forward.tls,
       });
     } else {
       // not supported
