@@ -13,7 +13,7 @@
     "test:prettier": "prettier --check \"src/**/*.ts\""
   },
   "bin": {
-    "lotun": "dist/bin.js"
+    "lotun": "dist/cli.js"
   },
   "repository": {
     "type": "git",
