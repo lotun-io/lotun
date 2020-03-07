@@ -14,6 +14,9 @@
     "type": "git",
     "url": "https://github.com/lotun-io/lotun/tree/master/packages/lotun-client"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "bpmux": "^8.1.0",
     "debug": "^4.1.1",
