@@ -8,8 +8,9 @@
     "bin"
   ],
   "scripts": {
-    "start": "node bin/lotun.js",
-    "tsc": "tsc"
+    "build": "rm -rf dist && tsc",
+    "test": "npm run test:prettier",
+    "test:prettier": "prettier --check \"src/**/*.ts\""
   },
   "bin": {
     "lotun": "dist/lotun.js"
@@ -18,12 +19,20 @@
     "type": "git",
     "url": "https://github.com/lotun-io/lotun/tree/master/packages/lotun-cli"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@lotun/client": "^1.0.0",
-    "chalk": "^2.4.1",
-    "minimist": "^1.2.0"
+    "@lotun/client": "^1.0.1",
+    "chalk": "^3.0.0",
+    "commander": "^4.1.1"
   },
   "devDependencies": {
-    "@types/minimist": "^1.2.0"
+    "@types/node": "^12.12.29",
+    "ts-node": "^8.6.2",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "ts-patch": "^1.0.5",
+    "typescript": "^3.8.3",
+    "typescript-transform-paths": "^1.1.14"
   }
 }

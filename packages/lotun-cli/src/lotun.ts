@@ -1,24 +1,86 @@
 import os from 'os';
-import fs from 'fs';
-import path from 'path';
 import chalk from 'chalk';
 import { LotunClient } from '@lotun/client';
-import minimist from 'minimist';
-import { AnyARecord } from 'dns';
+import program from 'commander';
+import { API_URL, WS_URL, DASHBOARD_URL } from './env';
+import { LotunConfig } from './utils';
 
-let homeDir = os.homedir();
+const pjson = require('../package.json');
+
+program
+  .version(pjson.version)
+  .option(
+    '-c, --config [config]',
+    'Full path to lotun config file ex. /home/user/.lotun/config.json',
+  );
+
+program.parse(process.argv);
+
+async function main() {
+  const opts = program.opts() as { version: string; config: string };
+  const lotunConfig = new LotunConfig({ configPath: opts.config });
+  const config = await lotunConfig.readConfig();
+
+  let deviceToken: string = '';
+  if (config && config.deviceToken && !deviceToken) {
+    deviceToken = config.deviceToken;
+  }
+
+  // @ts-ignore
+  const lotun = new LotunClient({
+    apiUrl: API_URL,
+    wsUrl: WS_URL,
+  });
+
+  if (!deviceToken) {
+    // Generate and store token
+    deviceToken = await lotun.generateDeviceToken();
+    await lotunConfig.saveConfig({ deviceToken });
+  }
+
+  lotun.connect({
+    deviceToken,
+  });
+
+  lotun.on('connect', () => {
+    console.log(
+      chalk.greenBright('Device connected, setup your device from Dashboard:'),
+    );
+    console.log(chalk.underline(`${DASHBOARD_URL}`));
+  });
+
+  lotun.on('disconnect', (reason, repeating) => {
+    if (repeating) {
+      return;
+    }
+
+    if (reason === 'UNPAIRED_DEVICE_TOKEN') {
+      const encodedToken = encodeURIComponent(deviceToken!);
+      const encodedHostname = encodeURIComponent(os.hostname());
+      console.log(
+        chalk.redBright(
+          'Device is not yet paried to your account, please pair your device by click on following link:',
+        ),
+      );
+      console.log(
+        `${DASHBOARD_URL}/devices/new?token=${encodedToken}&name=${encodedHostname}`,
+      );
+    }
+    if (reason === 'INVALID_DEVICE_TOKEN') {
+      console.log(chalk.redBright('Device token is invalid :('));
+    }
+  });
+}
+
+main().catch(console.error);
+
+/*
 
 let argv: any = {};
 if (process.argv) {
   argv = minimist(process.argv.slice(2));
 }
 
-/*
-  --deviceToken
-  -t
-  --config
-  -c
-*/
 
 let stage: 'devel' | 'stage' | undefined;
 
@@ -32,23 +94,7 @@ const { log, error } = console;
 let config: string;
 let lastError: string;
 
-async function generateDeviceToken() {
-  let deviceToken = undefined;
-  while (!deviceToken) {
-    try {
-      deviceToken = await lotunClient.generateDeviceToken();
-      break;
-    } catch (err) {
-      console.error(err);
-      await new Promise(resolve => {
-        setTimeout(() => {
-          resolve();
-        }, 5000);
-      });
-    }
-  }
-  return deviceToken;
-}
+
 
 async function getDeviceToken() {
   log(chalk`Reading configuration from {yellow.bold ${config}}\n`);
@@ -144,3 +190,4 @@ async function main() {
 }
 
 main().catch(error);
+*/

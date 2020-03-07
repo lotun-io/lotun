@@ -30,19 +30,14 @@ export class LotunClient extends EventEmitter {
   private api!: ReturnType<typeof getSdk>;
   private lastDisconnectReason!: LotunReasonError;
 
-  constructor(options: {
-    deviceToken: string;
-    reconnect?: boolean;
-    wsUrl?: string;
-    apiUrl?: string;
-  }) {
+  constructor(options: { wsUrl?: string; apiUrl?: string }) {
     super();
 
     this.options = {
-      deviceToken: options?.deviceToken,
-      reconnect: options.reconnect ?? true,
       wsUrl: options.wsUrl ?? WS_URL,
       apiUrl: options.apiUrl ?? API_URL,
+      reconnect: true,
+      deviceToken: '',
     };
 
     const client = new GraphQLClient(`${this.options.apiUrl}`);
@@ -54,8 +49,15 @@ export class LotunClient extends EventEmitter {
     return res.generateDeviceToken.token;
   }
 
-  connect() {
+  connect(options: { deviceToken: string; reconnect?: boolean }) {
     debug('connect');
+    if (typeof options.reconnect !== 'boolean') {
+      options.reconnect = true;
+    }
+
+    this.options.reconnect = options.reconnect;
+    this.options.deviceToken = options.deviceToken;
+
     this.ws = new WebSocket(this.options.wsUrl, {
       handshakeTimeout: 10000,
       headers: {
@@ -129,7 +131,10 @@ export class LotunClient extends EventEmitter {
     await this.destroy();
     if (this.options.reconnect) {
       setTimeout(async () => {
-        this.connect();
+        this.connect({
+          deviceToken: this.options.deviceToken,
+          reconnect: this.options.reconnect,
+        });
       }, 5000);
     }
   }
@@ -139,8 +144,12 @@ export class LotunClient extends EventEmitter {
     if (this.lotunSocket) {
       await this.lotunSocket.destroy();
     } else {
-      this.ws.terminate();
+      if (this.ws) {
+        this.ws.terminate();
+      }
     }
-    this.ws.removeAllListeners();
+    if (this.ws) {
+      this.ws.removeAllListeners();
+    }
   }
 }
