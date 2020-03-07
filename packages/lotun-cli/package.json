@@ -1,12 +1,9 @@
 {
   "name": "@lotun/cli",
   "author": "FreshIT, s.r.o.",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "dist/index.js",
   "license": "MIT",
-  "files": [
-    "bin"
-  ],
   "scripts": {
     "build": "ts-patch install && rm -rf dist && tsc",
     "test": "npm run test:prettier",
