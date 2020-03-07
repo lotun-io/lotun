@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import os from 'os';
 import chalk from 'chalk';
 import { LotunClient } from '@lotun/client';

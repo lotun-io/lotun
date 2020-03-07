@@ -1,8 +1,8 @@
 {
   "name": "@lotun/cli",
   "author": "FreshIT, s.r.o.",
-  "version": "1.0.1",
-  "main": "dist/lotun.js",
+  "version": "1.0.2",
+  "main": "dist/index.js",
   "license": "MIT",
   "files": [
     "bin"
@@ -13,7 +13,7 @@
     "test:prettier": "prettier --check \"src/**/*.ts\""
   },
   "bin": {
-    "lotun": "dist/lotun.js"
+    "lotun": "dist/bin.js"
   },
   "repository": {
     "type": "git",
