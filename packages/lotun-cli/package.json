@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "ts-patch install && rm -rf dist && tsc",
+    "build:docker": "export VERSION=$(npm show . version) && docker build -t lotun/cli:latest -t lotun/cli:$VERSION -f docker/Dockerfile docker",
     "test": "npm run test:prettier",
     "test:prettier": "prettier --check \"src/**/*.ts\""
   },
