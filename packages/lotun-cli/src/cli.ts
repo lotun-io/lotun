@@ -27,7 +27,6 @@ async function main() {
     deviceToken = config.deviceToken;
   }
 
-  // @ts-ignore
   const lotun = new LotunClient({
     apiUrl: API_URL,
     wsUrl: WS_URL,
@@ -66,10 +65,15 @@ async function main() {
       console.log(
         `${DASHBOARD_URL}/devices/new?token=${encodedToken}&name=${encodedHostname}`,
       );
+      return;
     }
+
     if (reason === 'INVALID_DEVICE_TOKEN') {
       console.log(chalk.redBright('Device token is invalid :('));
+      return;
     }
+
+    console.log(chalk.redBright(`Error code: ${reason}`));
   });
 }
 

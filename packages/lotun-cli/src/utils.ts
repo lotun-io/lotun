@@ -31,6 +31,6 @@ export class LotunConfig {
 
   async saveConfig(config: LotunConfigObject) {
     await promisify(fs.mkdir)(this.configDir, { recursive: true });
-    return promisify(fs.readFile)(this.configPath, JSON.stringify(config));
+    return promisify(fs.writeFile)(this.configPath, JSON.stringify(config));
   }
 }

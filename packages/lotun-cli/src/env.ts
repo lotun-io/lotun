@@ -7,9 +7,11 @@ let LOTUN_ENV = process.env.LOTUN_ENV || 'production';
 if (LOTUN_ENV === 'stage') {
   API_URL = 'https://api.stage.lotun.io/graphql';
   WS_URL = 'https://device.stage.lotun.io';
+  DASHBOARD_URL = 'https://dashboard.stage.lotun.io';
 }
 
 if (LOTUN_ENV === 'devel') {
   API_URL = 'https://api.devel.lotun.io/graphql';
   WS_URL = 'https://device.devel.lotun.io';
+  DASHBOARD_URL = 'https://dashboard.devel.lotun.io';
 }
