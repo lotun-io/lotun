@@ -3,9 +3,9 @@
   "author": "FreshIT, s.r.o.",
   "license": "MIT",
   "main": "dist/index.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "ts-patch install && rm -rf dist && tsc",
     "generate": "graphql-codegen",
     "test": "npm run test:prettier",
     "test:prettier": "prettier --check \"src/**/*.ts\""

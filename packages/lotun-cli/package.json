@@ -1,14 +1,14 @@
 {
   "name": "@lotun/cli",
   "author": "FreshIT, s.r.o.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/index.js",
   "license": "MIT",
   "files": [
     "bin"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "ts-patch install && rm -rf dist && tsc",
     "test": "npm run test:prettier",
     "test:prettier": "prettier --check \"src/**/*.ts\""
   },
