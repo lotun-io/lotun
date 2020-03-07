@@ -2,7 +2,7 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import { LotunClient, errorCodes } from '@lotun/client';
+import { LotunClient } from '@lotun/client';
 import minimist from 'minimist';
 import { AnyARecord } from 'dns';
 
@@ -108,7 +108,9 @@ async function main() {
 
   lotunClient.setDeviceToken(deviceToken);
   lotunClient.on('connect', () => {
-    log(chalk.greenBright('Device connected, setup your device from Dashboard:'));
+    log(
+      chalk.greenBright('Device connected, setup your device from Dashboard:'),
+    );
     log(chalk.underline(`${lotunClient.dashboardUrl}`));
   });
 
@@ -120,8 +122,16 @@ async function main() {
     if (reason === errorCodes.DEVICE_TOKEN_UNPAIRED && lastError !== reason) {
       const encodedToken = encodeURIComponent(deviceToken);
       const encodedHostname = encodeURIComponent(os.hostname());
-      log(chalk.redBright('Device is not yet paried to account, please pair your device by click on following link:'));
-      log(`${lotunClient.dashboardUrl}/devices/new?token=${encodedToken}&name=${encodedHostname}`);
+      log(
+        chalk.redBright(
+          'Device is not yet paried to account, please pair your device by click on following link:',
+        ),
+      );
+      log(
+        `${
+          lotunClient.dashboardUrl
+        }/devices/new?token=${encodedToken}&name=${encodedHostname}`,
+      );
     }
     if (reason === errorCodes.DEVICE_TOKEN_INVALID && lastError !== reason) {
       log(chalk.redBright('Your device token is invalid.'));

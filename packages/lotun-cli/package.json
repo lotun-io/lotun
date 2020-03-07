@@ -2,7 +2,7 @@
   "name": "@lotun/cli",
   "author": "FreshIT, s.r.o.",
   "version": "1.0.0",
-  "main": "bin/lotun.js",
+  "main": "dist/lotun.js",
   "license": "MIT",
   "files": [
     "bin"
@@ -12,7 +12,7 @@
     "tsc": "tsc"
   },
   "bin": {
-    "lotun": "bin/lotun.js"
+    "lotun": "dist/lotun.js"
   },
   "repository": {
     "type": "git",
