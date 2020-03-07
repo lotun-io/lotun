@@ -1,0 +1,13 @@
+{
+  "schema": "https://api.devel.lotun.io/graphql",
+  "documents": "src/**/*.graphql",
+  "generates": {
+    "src/api/sdk.ts": {
+      "plugins": [
+        "typescript",
+        "typescript-operations",
+        "typescript-graphql-request"
+      ]
+    }
+  }
+}
