@@ -65,11 +65,11 @@ app.on('ready', async () => {
   });
 
   lotun.on('disconnect', (reason, repeating) => {
-    console.log('DISCONNECT', reason);
-
     if (repeating) {
       return;
     }
+
+    console.log('DISCONNECT', reason);
 
     if (reason === 'UNPAIRED_DEVICE_TOKEN') {
       const contextMenu = [
