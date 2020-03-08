@@ -1,10 +1,9 @@
 import fs from 'fs';
 import { hostname } from 'os';
 import { shell } from 'electron';
-import { LOTUN_URL } from './constants';
 
-export function openPairURL(token: string) {
-  const pairURL = `https://dashboard.${LOTUN_URL}/devices/new?token=${token}&name=${hostname()}`;
+export function openPairURL(token: string, dashboardUrl: string) {
+  const pairURL = `${dashboardUrl}/devices/new?token=${token}&name=${hostname()}`;
   shell.openExternal(pairURL);
 }
 

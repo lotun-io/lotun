@@ -9,7 +9,7 @@
     "url": "https://github.com/lotun-io/lotun/tree/master/packages/lotun-app"
   },
   "scripts": {
-    "start": "electron .",
+    "start": "NODE_ENV=devel electron app/main.js",
     "build": "rm -rf app && tsc",
     "watch": "tsc -w",
     "build:app:publish": "electron-builder -p=always -mwl",
@@ -25,7 +25,7 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@lotun/cli": "^1.0.11",
+    "@lotun/cli": "^1.0.12",
     "electron-updater": "^4.0.4"
   }
 }

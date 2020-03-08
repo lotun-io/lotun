@@ -9,6 +9,3 @@ export declare const trayIcons: {
     WARNING_ICON: Electron.NativeImage;
     WARNING_ICON_PRESSED: Electron.NativeImage;
 };
-export declare const LOTUN_FILE: string;
-export declare const LOTUN_DIR: string;
-export declare let LOTUN_URL: string;

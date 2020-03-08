@@ -2,9 +2,9 @@ import { app, Tray, Menu, Notification, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { LotunClient } from '@lotun/client';
 import { LotunConfig, API_URL, DASHBOARD_URL, WS_URL } from '@lotun/cli';
-import { trayIcons, LOTUN_FILE, LOTUN_DIR } from './constants';
+import { trayIcons } from './constants';
 import { readFile, openPairURL } from './helpers';
-import { DEFAULT_CONTEXT_MENU } from './menu';
+import { getDefaultContextMenu } from './menu';
 
 let configPath: string | undefined;
 let deviceToken = '';
@@ -20,9 +20,17 @@ if (process.env.LOTUN_DEVICE_TOKEN) {
 autoUpdater.autoDownload = false;
 
 let tray: Tray;
+const DEFAULT_CONTEXT_MENU = getDefaultContextMenu({
+  dashboardUrl: DASHBOARD_URL,
+});
 
 app.on('ready', async () => {
   console.log('ready');
+
+  tray = new Tray(trayIcons.BASE_ICON);
+  tray.setPressedImage(trayIcons.BASE_ICON_PRESSED);
+  tray.setContextMenu(Menu.buildFromTemplate(DEFAULT_CONTEXT_MENU));
+
   const lotunConfig = new LotunConfig({ configPath });
   const config = await lotunConfig.readConfig();
 
@@ -46,61 +54,47 @@ app.on('ready', async () => {
   });
 
   lotun.on('connect', () => {
-    console.log('lotun.connect');
     const contextMenu = [
       {
         label: 'Device connected',
         enabled: false,
       },
-      // ...DEFAULT_CONTEXT_MENU,
+      ...DEFAULT_CONTEXT_MENU,
     ];
     tray.setContextMenu(Menu.buildFromTemplate(contextMenu));
     tray.setImage(trayIcons.ONLINE_ICON);
     tray.setPressedImage(trayIcons.ONLINE_ICON_PRESSED);
-    /*
-    log(
-      chalk.greenBright('Device connected, setup your device from Dashboard:'),
-    );
-    log(chalk.underline(`${DASHBOARD_URL}/`));
-    */
   });
 
   lotun.on('disconnect', (reason, repeating) => {
+    console.log('DISCONNECT', reason);
+
     if (repeating) {
       return;
     }
 
     if (reason === 'UNPAIRED_DEVICE_TOKEN') {
-      /*
-      const encodedToken = encodeURIComponent(deviceToken!);
-      const encodedHostname = encodeURIComponent(os.hostname());
-      log(
-        chalk.redBright(
-          'Device is not yet paried to your account, please pair your device by click on following link:',
-        ),
-      );
-      log(
-        chalk.underline(
-          `${DASHBOARD_URL}/devices/new?token=${encodedToken}&name=${encodedHostname}`,
-        ),
-      );
-      return;
-      */
+      const contextMenu = [
+        {
+          label: 'Pair new device',
+          click: () => openPairURL(deviceToken, DASHBOARD_URL),
+        },
+        ...DEFAULT_CONTEXT_MENU,
+      ];
+      tray.setContextMenu(Menu.buildFromTemplate(contextMenu));
+      tray.setImage(trayIcons.WARNING_ICON);
+      tray.setPressedImage(trayIcons.WARNING_ICON_PRESSED);
+      const notification = new Notification({
+        title: 'Pair new device',
+        body: 'Click here to pair your device with lotun.io',
+      });
+      notification.show();
+      notification.on('click', () => openPairURL(deviceToken, DASHBOARD_URL));
+    } else {
+      tray.setImage(trayIcons.OFFLINE_ICON);
+      tray.setPressedImage(trayIcons.OFFLINE_ICON_PRESSED);
     }
-
-    if (reason === 'INVALID_DEVICE_TOKEN') {
-      /*
-      log(chalk.redBright('Device token is invalid :('));
-      return;
-      */
-    }
-
-    // log(chalk.redBright(`Error code: ${reason}`));
   });
-
-  tray = new Tray(trayIcons.BASE_ICON);
-  tray.setPressedImage(trayIcons.BASE_ICON_PRESSED);
-  // tray.setContextMenu(Menu.buildFromTemplate([...DEFAULT_CONTEXT_MENU]));
 });
 
 /*

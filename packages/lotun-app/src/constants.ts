@@ -1,8 +1,10 @@
 import path from 'path';
-import os from 'os';
 import { nativeImage, app } from 'electron';
 
 function getResourcesPath() {
+  if (process.env.NODE_ENV === 'devel') {
+    return `${process.cwd()}`;
+  }
   return process.resourcesPath;
 }
 
@@ -44,27 +46,3 @@ export const trayIcons = {
     ),
   ),
 };
-
-let configFile = 'config.json';
-
-if (process.env && process.env.NODE_ENV && process.env.NODE_ENV === 'devel') {
-  configFile = 'devel-config.json';
-}
-
-export const LOTUN_FILE = path.resolve(
-  app.getPath('home'),
-  '.lotun',
-  configFile,
-);
-
-export const LOTUN_DIR = path.resolve(app.getPath('home'), '.lotun');
-export let LOTUN_URL = 'lotun.io';
-
-if (process.env.LOTUN_ENV) {
-  if (process.env.LOTUN_ENV === 'stage') {
-    LOTUN_URL = 'stage.lotun.io';
-  }
-  if (process.env.LOTUN_ENV === 'devel') {
-    LOTUN_URL = 'devel.lotun.io';
-  }
-}
