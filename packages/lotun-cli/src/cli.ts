@@ -63,11 +63,12 @@ async function main() {
   const opts = program.opts() as { version: string; config: string };
 
   let configPath = opts.config;
+
   if (!configPath && process.env.LOTUN_CONFIG_PATH) {
     configPath = process.env.LOTUN_CONFIG_PATH;
   }
 
-  const lotunConfig = new LotunConfig({ configPath: opts.config });
+  const lotunConfig = new LotunConfig({ configPath });
   const config = await lotunConfig.readConfig();
 
   let deviceToken: string = '';

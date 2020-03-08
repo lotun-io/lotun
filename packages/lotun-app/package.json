@@ -26,7 +26,7 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@lotun/cli": "^1.0.9",
+    "@lotun/cli": "^1.0.10",
     "electron-updater": "^4.0.4"
   }
 }

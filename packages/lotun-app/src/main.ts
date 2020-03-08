@@ -3,136 +3,107 @@ import path from 'path';
 import { app, Tray, Menu, Notification, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { LotunClient } from '@lotun/client';
-import { LotunConfig } from '@lotun/cli';
+import { LotunConfig, API_URL, DASHBOARD_URL, WS_URL } from '@lotun/cli';
 import { trayIcons, LOTUN_FILE, LOTUN_DIR } from './constants';
 import { readFile, openPairURL } from './helpers';
 import { DEFAULT_CONTEXT_MENU } from './menu';
 
-const lotunConfig = new LotunConfig({});
+let configPath: string | undefined;
+let deviceToken = '';
 
-let tray;
-let token;
-let lastError;
+if (process.env.LOTUN_CONFIG_PATH) {
+  configPath = process.env.LOTUN_CONFIG_PATH;
+}
+
+if (process.env.LOTUN_DEVICE_TOKEN) {
+  deviceToken = process.env.LOTUN_DEVICE_TOKEN;
+}
 
 autoUpdater.autoDownload = false;
 
-function mkDirByPathSync(targetDir, { isRelativeToScript = false } = {}) {
-  const sep = path.sep;
-  const initDir = path.isAbsolute(targetDir) ? sep : '';
-  const baseDir = isRelativeToScript ? __dirname : '.';
-
-  return targetDir.split(sep).reduce((parentDir, childDir) => {
-    const curDir = path.resolve(baseDir, parentDir, childDir);
-    try {
-      fs.mkdirSync(curDir);
-    } catch (err) {
-      if (err.code === 'EEXIST') {
-        // curDir already exists!
-        return curDir;
-      }
-
-      // To avoid `EISDIR` error on Mac and `EACCES`-->`ENOENT` and `EPERM` on Windows.
-      if (err.code === 'ENOENT') {
-        // Throw the original parentDir error on curDir `ENOENT` failure.
-        throw new Error(`EACCES: permission denied, mkdir '${parentDir}'`);
-      }
-
-      const caughtErr = ['EACCES', 'EPERM', 'EISDIR'].indexOf(err.code) > -1;
-      if (!caughtErr || (caughtErr && curDir === path.resolve(targetDir))) {
-        throw err; // Throw if it's just the last created dir.
-      }
-    }
-
-    return curDir;
-  }, initDir);
-}
-
-const lotunClient = client.create();
-
-function generateDeviceToken() {
-  // @TODO attempt limit
-  return new Promise(resolve => {
-    function attempt() {
-      lotunClient
-        .getNewDeviceToken()
-        .then(deviceToken => {
-          resolve(deviceToken);
-        })
-        .catch(() => {
-          setTimeout(() => {
-            attempt();
-          }, 5000);
-        });
-    }
-    attempt();
-  });
-}
+let tray: Tray;
 
 app.on('ready', async () => {
-  tray = new Tray(trayIcons.BASE_ICON);
-  tray.setPressedImage(trayIcons.BASE_ICON_PRESSED);
-  tray.setContextMenu(Menu.buildFromTemplate([...DEFAULT_CONTEXT_MENU]));
+  const lotunConfig = new LotunConfig({ configPath });
+  const config = await lotunConfig.readConfig();
 
-  try {
-    const tokenFile = await readFile(LOTUN_FILE);
-    token = JSON.parse(tokenFile.toString()).deviceToken;
-    lotunClient.setDeviceToken(token);
-  } catch (e) {
-    mkDirByPathSync(LOTUN_DIR);
-    token = await generateDeviceToken();
-    const data = { deviceToken: token };
-
-    fs.writeFileSync(LOTUN_FILE, JSON.stringify(data));
-    lotunClient.setDeviceToken(token);
-  } finally {
-    lotunClient.connect();
+  if (config && config.deviceToken && !deviceToken) {
+    deviceToken = config.deviceToken;
   }
-});
 
-lotunClient.on('close', (code, reason) => {
-  if (reason === errorCodes.DEVICE_TOKEN_UNPAIRED && lastError !== reason) {
+  const lotun = new LotunClient({
+    apiUrl: API_URL,
+    wsUrl: WS_URL,
+  });
+
+  if (!deviceToken) {
+    // Generate and store token
+    deviceToken = await lotun.generateDeviceToken();
+    await lotunConfig.saveConfig({ deviceToken });
+  }
+
+  lotun.connect({
+    deviceToken,
+  });
+
+  lotun.on('connect', () => {
     const contextMenu = [
       {
-        label: 'Pair new device',
-        click: () => openPairURL(token),
+        label: 'Device connected',
+        enabled: false,
       },
-      ...DEFAULT_CONTEXT_MENU,
+      // ...DEFAULT_CONTEXT_MENU,
     ];
     tray.setContextMenu(Menu.buildFromTemplate(contextMenu));
-    tray.setImage(trayIcons.WARNING_ICON);
-    tray.setPressedImage(trayIcons.WARNING_ICON_PRESSED);
-    const notification = new Notification({
-      title: 'Pair new device',
-      body: 'Click here to pair your device with lotun.io',
-    });
-    notification.show();
-    notification.on('click', () => openPairURL(token));
-  } else {
-    tray.setImage(trayIcons.OFFLINE_ICON);
-    tray.setPressedImage(trayIcons.OFFLINE_ICON_PRESSED);
-  }
+    tray.setImage(trayIcons.ONLINE_ICON);
+    tray.setPressedImage(trayIcons.ONLINE_ICON_PRESSED);
+    /*
+    log(
+      chalk.greenBright('Device connected, setup your device from Dashboard:'),
+    );
+    log(chalk.underline(`${DASHBOARD_URL}/`));
+    */
+  });
 
-  lastError = reason;
+  lotun.on('disconnect', (reason, repeating) => {
+    if (repeating) {
+      return;
+    }
+
+    if (reason === 'UNPAIRED_DEVICE_TOKEN') {
+      /*
+      const encodedToken = encodeURIComponent(deviceToken!);
+      const encodedHostname = encodeURIComponent(os.hostname());
+      log(
+        chalk.redBright(
+          'Device is not yet paried to your account, please pair your device by click on following link:',
+        ),
+      );
+      log(
+        chalk.underline(
+          `${DASHBOARD_URL}/devices/new?token=${encodedToken}&name=${encodedHostname}`,
+        ),
+      );
+      return;
+      */
+    }
+
+    if (reason === 'INVALID_DEVICE_TOKEN') {
+      /*
+      log(chalk.redBright('Device token is invalid :('));
+      return;
+      */
+    }
+
+    // log(chalk.redBright(`Error code: ${reason}`));
+  });
+
+  tray = new Tray(trayIcons.BASE_ICON);
+  tray.setPressedImage(trayIcons.BASE_ICON_PRESSED);
+  // tray.setContextMenu(Menu.buildFromTemplate([...DEFAULT_CONTEXT_MENU]));
 });
 
-lotunClient.on('connect', () => {
-  const contextMenu = [
-    {
-      label: 'Device connected',
-      enabled: false,
-    },
-    ...DEFAULT_CONTEXT_MENU,
-  ];
-  tray.setContextMenu(Menu.buildFromTemplate(contextMenu));
-  tray.setImage(trayIcons.ONLINE_ICON);
-  tray.setPressedImage(trayIcons.ONLINE_ICON_PRESSED);
-  lastError = null;
-});
-
-lotunClient.on('error', () => {
-  // console.error(err);
-});
-
+/*
 autoUpdater.on('update-available', () => {
   dialog.showMessageBox(
     {
@@ -159,7 +130,8 @@ autoUpdater.on('update-not-available', () => {
 autoUpdater.on('update-downloaded', () => {
   dialog.showMessageBox(
     {
-      title: 'Install Updates',
+      accessibleTitle: 'Install Updates',
+
       message: 'Updates downloaded, application will be quit for update...',
     },
     () => {
@@ -174,3 +146,4 @@ autoUpdater.on('error', error => {
     error == null ? 'unknown' : (error.stack || error).toString(),
   );
 });
+*/
