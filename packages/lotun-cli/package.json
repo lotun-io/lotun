@@ -23,7 +23,8 @@
   "dependencies": {
     "@lotun/client": "^1.0.4",
     "chalk": "^3.0.0",
-    "commander": "^4.1.1"
+    "commander": "^4.1.1",
+    "latest-version": "^5.1.0"
   },
   "devDependencies": {
     "@types/node": "^12.12.29",

@@ -3,8 +3,22 @@ import os from 'os';
 import chalk from 'chalk';
 import { LotunClient } from '@lotun/client';
 import program from 'commander';
+import latestVersion from 'latest-version';
 import { API_URL, WS_URL, DASHBOARD_URL } from './env';
 import { LotunConfig } from './utils';
+
+function log(...args: any[]) {
+  console.log.apply(
+    console,
+    // @ts-ignore
+    [
+      `[ ${new Date()
+        .toString()
+        .replace(/\(.*\)/, '')
+        .trim()} ]`,
+    ].concat(args),
+  );
+}
 
 const pjson = require('../package.json');
 
@@ -18,6 +32,24 @@ program
 program.parse(process.argv);
 
 async function main() {
+  // const lotunCliLatestVersion = await
+  latestVersion('@lotun/cli')
+    .then(lotunCliVersion => {
+      if (lotunCliVersion !== pjson.version) {
+        log(
+          chalk.yellowBright(`Update available`),
+          `${pjson.version}`,
+          chalk.yellowBright(`-> ${lotunCliVersion}`),
+        );
+        log(
+          chalk.yellowBright(`Run`),
+          chalk.cyanBright(`npm i -g @lotun/cli`),
+          chalk.yellowBright(`to update`),
+        );
+      }
+    })
+    .catch(() => {});
+
   const opts = program.opts() as { version: string; config: string };
   const lotunConfig = new LotunConfig({ configPath: opts.config });
   const config = await lotunConfig.readConfig();
@@ -43,10 +75,10 @@ async function main() {
   });
 
   lotun.on('connect', () => {
-    console.log(
+    log(
       chalk.greenBright('Device connected, setup your device from Dashboard:'),
     );
-    console.log(chalk.underline(`${DASHBOARD_URL}`));
+    log(chalk.underline(`${DASHBOARD_URL}/`));
   });
 
   lotun.on('disconnect', (reason, repeating) => {
@@ -57,23 +89,25 @@ async function main() {
     if (reason === 'UNPAIRED_DEVICE_TOKEN') {
       const encodedToken = encodeURIComponent(deviceToken!);
       const encodedHostname = encodeURIComponent(os.hostname());
-      console.log(
+      log(
         chalk.redBright(
           'Device is not yet paried to your account, please pair your device by click on following link:',
         ),
       );
-      console.log(
-        `${DASHBOARD_URL}/devices/new?token=${encodedToken}&name=${encodedHostname}`,
+      log(
+        chalk.underline(
+          `${DASHBOARD_URL}/devices/new?token=${encodedToken}&name=${encodedHostname}`,
+        ),
       );
       return;
     }
 
     if (reason === 'INVALID_DEVICE_TOKEN') {
-      console.log(chalk.redBright('Device token is invalid :('));
+      log(chalk.redBright('Device token is invalid :('));
       return;
     }
 
-    console.log(chalk.redBright(`Error code: ${reason}`));
+    log(chalk.redBright(`Error code: ${reason}`));
   });
 }
 
