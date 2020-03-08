@@ -25,8 +25,6 @@ const DEFAULT_CONTEXT_MENU = getDefaultContextMenu({
 });
 
 app.on('ready', async () => {
-  console.log('ready');
-
   tray = new Tray(trayIcons.BASE_ICON);
   tray.setPressedImage(trayIcons.BASE_ICON_PRESSED);
   tray.setContextMenu(Menu.buildFromTemplate(DEFAULT_CONTEXT_MENU));
