@@ -1,14 +1,15 @@
 {
   "name": "@lotun/cli",
   "author": "FreshIT, s.r.o.",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
     "build": "ts-patch install && rm -rf dist && tsc",
-    "build:docker": "export VERSION=$(npm show . version) && docker build -t lotun/cli:latest -t lotun/cli:$VERSION -f docker/Dockerfile docker",
     "test": "npm run test:prettier",
-    "test:prettier": "prettier --check \"src/**/*.ts\""
+    "test:prettier": "prettier --check \"src/**/*.ts\"",
+    "docker:build": "export VERSION=$(npm show . version) && docker build -t lotun/cli:latest -t lotun/cli:$VERSION -f docker/Dockerfile docker",
+    "docker:push": "docker push lotun/cli:1.0.9 && docker push lotun/cli:latest"
   },
   "bin": {
     "lotun": "dist/cli.js"
