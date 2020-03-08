@@ -22,7 +22,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@lotun/client": "^1.0.4",
+    "@lotun/client": "^1.0.5",
     "chalk": "^3.0.0",
     "commander": "^4.1.1",
     "latest-version": "^5.1.0"
