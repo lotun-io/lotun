@@ -31,3 +31,6 @@ node_modules
 dist
 build
 .vscode
+
+# lotun-app
+/packages/lotun-app/app
