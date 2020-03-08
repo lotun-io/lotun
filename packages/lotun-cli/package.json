@@ -1,7 +1,7 @@
 {
   "name": "@lotun/cli",
   "author": "FreshIT, s.r.o.",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
@@ -29,7 +29,6 @@
   },
   "devDependencies": {
     "@types/node": "^12.12.29",
-    "@types/ws": "^7.2.2",
     "prettier": "^1.19.1",
     "ts-node": "^8.6.2",
     "ts-node-dev": "^1.0.0-pre.44",

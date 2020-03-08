@@ -19,14 +19,13 @@
   },
   "devDependencies": {
     "@types/node": "^12.12.29",
-    "@types/ws": "^7.2.2",
     "electron": "^8.1.0",
     "electron-builder": "^22.4.0",
     "prettier": "^1.19.1",
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@lotun/cli": "^1.0.10",
+    "@lotun/cli": "^1.0.11",
     "electron-updater": "^4.0.4"
   }
 }

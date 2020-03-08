@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import { app, Tray, Menu, Notification, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { LotunClient } from '@lotun/client';
@@ -24,6 +22,7 @@ autoUpdater.autoDownload = false;
 let tray: Tray;
 
 app.on('ready', async () => {
+  console.log('ready');
   const lotunConfig = new LotunConfig({ configPath });
   const config = await lotunConfig.readConfig();
 
@@ -47,6 +46,7 @@ app.on('ready', async () => {
   });
 
   lotun.on('connect', () => {
+    console.log('lotun.connect');
     const contextMenu = [
       {
         label: 'Device connected',
