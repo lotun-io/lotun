@@ -29,10 +29,20 @@ program
     'Full path to lotun config file ex. /home/user/.lotun/config.json',
   );
 
+program.on('--help', function() {
+  console.log('');
+  console.log('Environment Variables:');
+  console.log(
+    '  LOTUN_CONFIG_PATH   -  Full path to lotun config file ex. /home/user/.lotun/config.json',
+  );
+  console.log(
+    '  LOTUN_DEVICE_TOKEN  -  Use device token directly, instead reading it from config path',
+  );
+});
+
 program.parse(process.argv);
 
 async function main() {
-  // const lotunCliLatestVersion = await
   latestVersion('@lotun/cli')
     .then(lotunCliVersion => {
       if (lotunCliVersion !== pjson.version) {
@@ -51,10 +61,21 @@ async function main() {
     .catch(() => {});
 
   const opts = program.opts() as { version: string; config: string };
+
+  let configPath = opts.config;
+  if (!configPath && process.env.LOTUN_CONFIG_PATH) {
+    configPath = process.env.LOTUN_CONFIG_PATH;
+  }
+
   const lotunConfig = new LotunConfig({ configPath: opts.config });
   const config = await lotunConfig.readConfig();
 
   let deviceToken: string = '';
+
+  if (process.env.LOTUN_DEVICE_TOKEN) {
+    deviceToken = process.env.LOTUN_DEVICE_TOKEN;
+  }
+
   if (config && config.deviceToken && !deviceToken) {
     deviceToken = config.deviceToken;
   }
