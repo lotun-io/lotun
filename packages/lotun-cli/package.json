@@ -23,19 +23,19 @@
     "access": "public"
   },
   "dependencies": {
-    "@lotun/client": "^1.0.5",
+    "@lotun/client": "^1.0.6",
     "chalk": "^3.0.0",
-    "commander": "^4.1.1",
+    "commander": "^5.0.0",
     "latest-version": "^5.1.0",
     "source-map-support": "^0.5.16"
   },
   "devDependencies": {
-    "@types/node": "^12.12.29",
+    "@types/node": "^12.12.30",
     "@types/source-map-support": "^0.5.1",
     "prettier": "^1.19.1",
-    "ts-node": "^8.6.2",
+    "ts-node": "^8.7.0",
     "ts-node-dev": "^1.0.0-pre.44",
-    "ts-patch": "^1.0.5",
+    "ts-patch": "^1.0.6",
     "typescript": "^3.8.3",
     "typescript-transform-paths": "^1.1.14"
   }
