@@ -1,11 +1,14 @@
-import Debug from 'debug';
+import { debug as debugRoot } from './utils';
+import path from 'path';
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { GraphQLClient } from 'graphql-request';
 import { getSdk } from 'api/sdk';
 import { LotunSocket, LotunMessageType, LotunReasonError } from './LotunSocket';
+import { LotunApps } from './LotunApps';
+import { getDefaultConfigPath } from './utils';
 
-const debug = Debug('LotunClient');
+const debug = debugRoot.extend('LotunClient');
 
 const WS_URL = 'wss://device.lotun.io';
 const API_URL = 'https://api.lotun.io/graphql';
@@ -21,7 +24,9 @@ export interface LotunClient {
 export class LotunClient extends EventEmitter {
   private ws!: WebSocket;
   private lotunSocket!: LotunSocket;
+  private apps!: LotunApps;
   private options!: {
+    configDir: string;
     deviceToken: string;
     wsUrl: string;
     reconnect: boolean;
@@ -30,10 +35,21 @@ export class LotunClient extends EventEmitter {
   private api!: ReturnType<typeof getSdk>;
   private lastDisconnectReason!: LotunReasonError;
 
-  constructor(options: { wsUrl?: string; apiUrl?: string }) {
+  constructor(options: {
+    configPath?: string;
+    wsUrl?: string;
+    apiUrl?: string;
+  }) {
     super();
 
+    if (!options.configPath) {
+      options.configPath = getDefaultConfigPath();
+    }
+
+    const configDir = path.dirname(options.configPath);
+
     this.options = {
+      configDir,
       wsUrl: options.wsUrl ?? WS_URL,
       apiUrl: options.apiUrl ?? API_URL,
       reconnect: true,
@@ -69,6 +85,10 @@ export class LotunClient extends EventEmitter {
       debug('open');
 
       this.lotunSocket = new LotunSocket(this.ws);
+      this.apps = new LotunApps({
+        lotunSocket: this.lotunSocket,
+        configDir: this.options.configDir,
+      });
 
       this.lotunSocket.on('message', (type, payload) => {
         debug('lotunSocket.message', type, payload);
@@ -77,13 +97,15 @@ export class LotunClient extends EventEmitter {
           this.emit('connect');
         }
 
-        if (type === 'test2') {
+        if (type === 'apps') {
           const data = payload as LotunMessageType[typeof type];
+          this.apps.messageApps(data);
         }
       });
 
       this.lotunSocket.on('duplex', (duplex, handshakeData) => {
         debug('lotunSocket.duplex', handshakeData);
+        this.apps.duplex(duplex, handshakeData);
       });
 
       this.lotunSocket.once('createMessageStream', () => {
@@ -148,8 +170,9 @@ export class LotunClient extends EventEmitter {
         this.ws.terminate();
       }
     }
-    if (this.ws) {
-      this.ws.removeAllListeners();
+
+    if (this.apps) {
+      await this.apps.destroy();
     }
   }
 }

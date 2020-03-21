@@ -1,24 +1,12 @@
 #!/usr/bin/env node
+import 'source-map-support/register';
 import os from 'os';
 import chalk from 'chalk';
 import { LotunClient } from '@lotun/client';
 import program from 'commander';
 import latestVersion from 'latest-version';
 import { API_URL, WS_URL, DASHBOARD_URL } from './env';
-import { LotunConfig } from './utils';
-
-function log(...args: any[]) {
-  console.log.apply(
-    console,
-    // @ts-ignore
-    [
-      `[ ${new Date()
-        .toString()
-        .replace(/\(.*\)/, '')
-        .trim()} ]`,
-    ].concat(args),
-  );
-}
+import { LotunConfig, log, error } from './utils';
 
 const pjson = require('../package.json');
 
@@ -38,12 +26,15 @@ program.on('--help', function() {
   console.log(
     '  LOTUN_DEVICE_TOKEN  -  Use device token directly, instead reading it from config path',
   );
+  console.log(
+    '  LOTUN_USE_GLOBAL_NPM  -  Use globally installed npm module instead of local npm moudle',
+  );
 });
 
 program.parse(process.argv);
 
 async function main() {
-  latestVersion('@lotun/cli')
+  latestVersion(pjson.name)
     .then(lotunCliVersion => {
       if (lotunCliVersion !== pjson.version) {
         log(
@@ -60,7 +51,7 @@ async function main() {
     })
     .catch(() => {});
 
-  const opts = program.opts() as { version: string; config: string };
+  const opts = program.opts() as { version: string; config?: string };
 
   let configPath = opts.config;
 
@@ -82,6 +73,7 @@ async function main() {
   }
 
   const lotun = new LotunClient({
+    configPath,
     apiUrl: API_URL,
     wsUrl: WS_URL,
   });
@@ -125,12 +117,20 @@ async function main() {
     }
 
     if (reason === 'INVALID_DEVICE_TOKEN') {
-      log(chalk.redBright('Device token is invalid :('));
+      error(chalk.redBright('Device token is invalid'));
       return;
     }
 
-    log(chalk.redBright(`Error code: ${reason}`));
+    error(chalk.redBright(`Error code: ${reason}`));
   });
 }
 
-main().catch(console.error);
+main();
+
+process.on('uncaughtException', err => {
+  console.error('uncaughtException', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('unhandledRejection', promise, 'reason:', reason);
+});

@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "ts-patch install && rm -rf dist && tsc",
+    "build:watch": "tsc -w",
     "test": "npm run test:prettier",
     "test:prettier": "prettier --check \"src/**/*.ts\"",
     "docker:build": "export VERSION=$(npm show . version) && docker build -t lotun/cli:latest -t lotun/cli:$VERSION -f docker/Dockerfile docker",
@@ -25,10 +26,12 @@
     "@lotun/client": "^1.0.5",
     "chalk": "^3.0.0",
     "commander": "^4.1.1",
-    "latest-version": "^5.1.0"
+    "latest-version": "^5.1.0",
+    "source-map-support": "^0.5.16"
   },
   "devDependencies": {
     "@types/node": "^12.12.29",
+    "@types/source-map-support": "^0.5.1",
     "prettier": "^1.19.1",
     "ts-node": "^8.6.2",
     "ts-node-dev": "^1.0.0-pre.44",

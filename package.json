@@ -3,7 +3,7 @@
   "version": "0.0.3",
   "private": true,
   "scripts": {
-    "bootstrap": "lerna bootstrap",
+    "bootstrap": "lerna bootstrap && lerna add @lotun/client packages/lotun-app",
     "test": "npm run prettier && npm run lint",
     "lint": "eslint 'packages/**/*.js'",
     "lint:format": "eslint --fix 'packages/**/*.js'",
@@ -12,23 +12,15 @@
   },
   "author": "FreshIT, s.r.o.",
   "license": "MIT",
-  "devDependencies": {
-    "eslint": "=4.19.1",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-config-prettier": "^5.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "husky": "^1.1.2",
-    "lerna": "^3.4.3",
-    "prettier": "^1.19.1",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.4.5"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/lotun-io/lotun"
   },
   "description": "Monorepo for all Lotun Client packages (client, cli and electron app)",
-  "dependencies": {
-    "babel-eslint": "^10.0.3"
+  "dependencies": {},
+  "devDependencies": {
+    "lerna": "^3.4.3",
+    "prettier": "^1.19.1",
+    "typescript": "^3.4.5"
   }
 }

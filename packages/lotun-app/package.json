@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@lotun/cli": "^1.0.12",
+    "@lotun/client": "^1.0.5",
     "electron-updater": "^4.0.4"
   }
 }

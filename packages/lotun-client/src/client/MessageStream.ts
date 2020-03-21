@@ -1,7 +1,6 @@
 import { Duplex } from 'stream';
 import { EventEmitter } from 'events';
 import { StringDecoder } from 'string_decoder';
-import { LotunMessageType } from './LotunSocket';
 
 export interface MessageStream {
   on(
@@ -26,10 +25,7 @@ export class MessageStream extends EventEmitter {
     });
   }
 
-  send<T extends keyof LotunMessageType>(
-    event: T,
-    args: LotunMessageType[T],
-  ): boolean {
+  send(event: string, args: any): boolean {
     const data = {
       event,
       args,
@@ -41,7 +37,6 @@ export class MessageStream extends EventEmitter {
 
   destroy() {
     this.jsonStream.destroy();
-    this.removeAllListeners();
   }
 }
 
@@ -112,6 +107,5 @@ class JsonStream extends EventEmitter {
 
   destroy() {
     this.duplex.destroy();
-    this.removeAllListeners();
   }
 }

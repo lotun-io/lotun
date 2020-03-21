@@ -1,14 +1,14 @@
 import Debug from 'debug';
-import { Duplex, Stream } from 'stream';
+import { Duplex } from 'stream';
 import { EventEmitter } from 'events';
 import { BPMux } from 'bpmux';
 import WebSocket from 'ws';
 import si from 'systeminformation';
 import { MessageStream } from './MessageStream';
 
-const debug = Debug('LotunSocket');
+const debug = Debug('LotubSocket');
 
-type HandshakeType = 'MESSAGE_STREAM' | 'MULTIPLEX_STREAM';
+type HandshakeType = 'MESSAGE' | 'MULTIPLEX';
 type HandshakeData = any;
 
 export type LotunReasonError =
@@ -16,18 +16,41 @@ export type LotunReasonError =
   | 'UNPAIRED_DEVICE_TOKEN'
   | 'NETWORK_ERROR';
 
+export type LotunMessageApp = {
+  id: string;
+  name: string;
+  type: 'HTTP' | 'TCP' | 'UDP';
+  entryPoint: {
+    id: string;
+    name: string;
+    type: 'HOSTNAME' | 'EXTERNAL_PORT' | 'DEVICE_PORT';
+    port: string;
+    updatedAt: string;
+  };
+  middlewares: {
+    id: string;
+    optionsScript: string;
+    priority: string;
+    rule: {
+      id: string;
+      name: string;
+      version: string;
+      ruleScript: string;
+      updatedAt: string;
+    };
+  }[];
+  updatedAt: string;
+};
+
+export type LotunMessageApps = LotunMessageApp[];
+
 export type LotunMessageType = {
   connect: {};
   clientInfo: {
     version: string;
     os?: si.Systeminformation.OsData;
   };
-  test: {
-    id: string;
-  };
-  test2: {
-    id: number;
-  };
+  apps: LotunMessageApps;
 };
 
 export interface LotunSocket {
@@ -44,10 +67,10 @@ export interface LotunSocket {
 }
 
 export class LotunSocket extends EventEmitter {
-  private messageStream?: MessageStream;
   private ws: WebSocket;
   private wsStream: Duplex;
   private bpMux: BPMux;
+  private messageStream?: MessageStream;
 
   constructor(ws: WebSocket, options?: { high_channels?: boolean }) {
     super();
@@ -74,15 +97,15 @@ export class LotunSocket extends EventEmitter {
 
     this.bpMux.on('handshake', (duplex, handshakeData) => {
       if (handshakeData) {
-        const data = handshakeData as { type: HandshakeType };
+        const data = handshakeData as { type: HandshakeType; payload: any };
 
-        if (data.type === 'MESSAGE_STREAM') {
+        if (data.type === 'MESSAGE') {
           this.createMessageStream(duplex);
           return;
         }
 
-        if (data.type === 'MULTIPLEX_STREAM') {
-          this.emit('stream', duplex, handshakeData);
+        if (data.type === 'MULTIPLEX') {
+          this.emit('duplex', duplex, data.payload);
           return;
         }
 
@@ -96,9 +119,6 @@ export class LotunSocket extends EventEmitter {
 
     this.wsStream.on('close', () => {
       debug('wsStream.close');
-      this.wsStream.removeAllListeners();
-      // @ts-ignore
-      this.bpMux.removeAllListeners();
     });
 
     this.wsStream.on('error', err => {
@@ -120,7 +140,7 @@ export class LotunSocket extends EventEmitter {
   // @TODO types
   createDuplex(payload: any) {
     const data: { type: HandshakeType; payload: any } = {
-      type: 'MULTIPLEX_STREAM',
+      type: 'MULTIPLEX',
       payload: payload,
     };
     return this.bpMux.multiplex({
@@ -139,7 +159,7 @@ export class LotunSocket extends EventEmitter {
       duplex = stream;
     } else {
       const data: { type: HandshakeType } = {
-        type: 'MESSAGE_STREAM',
+        type: 'MESSAGE',
       };
 
       duplex = this.bpMux.multiplex({
@@ -150,9 +170,7 @@ export class LotunSocket extends EventEmitter {
         duplex.destroy();
       });
 
-      duplex.on('close', () => {
-        duplex.removeAllListeners();
-      });
+      duplex.on('close', () => {});
     }
 
     this.messageStream = new MessageStream(duplex);
@@ -175,12 +193,18 @@ export class LotunSocket extends EventEmitter {
   }
 
   async sendClientInfo() {
-    const clientInfo = await this.getClientInfo();
-    this.messageStream?.send('clientInfo', clientInfo);
+    let data: LotunMessageType['clientInfo'];
+    data = await this.getClientInfo();
+    this.messageStream?.send('clientInfo', data);
   }
 
   sendConnect() {
-    this.messageStream?.send('connect', {});
+    let data: LotunMessageType['connect'] = {};
+    this.messageStream?.send('connect', data);
+  }
+
+  sendApps(data: LotunMessageType['apps']) {
+    this.messageStream?.send('apps', data);
   }
 
   async destroy() {
@@ -190,7 +214,5 @@ export class LotunSocket extends EventEmitter {
     if (this.messageStream) {
       this.messageStream.destroy();
     }
-
-    this.removeAllListeners();
   }
 }

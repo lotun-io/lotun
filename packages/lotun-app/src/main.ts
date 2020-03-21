@@ -37,6 +37,7 @@ app.on('ready', async () => {
   }
 
   const lotun = new LotunClient({
+    configPath,
     apiUrl: API_URL,
     wsUrl: WS_URL,
   });

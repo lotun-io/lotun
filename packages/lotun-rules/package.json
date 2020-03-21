@@ -1,0 +1,24 @@
+{
+  "name": "@lotun/rules",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc && npm run prettier:dist",
+    "build:watch": "tsc -w",
+    "prettier:dist": "prettier \"dist/**/*.js\" --write",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@lotun/client": "^1.0.5",
+    "@types/http-proxy": "^1.17.3",
+    "@types/node": "^12.12.30",
+    "http-auth": "^4.1.2",
+    "http-proxy": "^1.18.0",
+    "prettier": "^1.19.1",
+    "ts-jsdoc": "^3.1.1",
+    "typescript": "^3.8.3"
+  }
+}

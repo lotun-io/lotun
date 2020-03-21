@@ -30,6 +30,7 @@ node_modules
 .env
 dist
 build
+bin
 .vscode
 
 # lotun-app
