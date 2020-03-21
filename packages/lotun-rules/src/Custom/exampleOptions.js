@@ -10,7 +10,7 @@ module.exports = async function options(ctx) {
   ctx.on('connection', socket => {});
 
   // UDP app
-  ctx.on('message', (msg, rinfo, send) => {});
+  ctx.on('udpProxySocket', udpProxySocket => {});
 
   // clean up
   ctx.on('destroy', () => {});

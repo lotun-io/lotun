@@ -26,12 +26,13 @@ module.exports = async function rule(ctx) {
     pipeline(nextSocket, socket);
   });
 
-  ctx.on('message', function(msg, rinfo, send) {
-    const isAllowed = firewall(rinfo.address);
+  ctx.on('udpProxySocket', function(udpProxySocket) {
+    const isAllowed = firewall(udpProxySocket.rinfo.address);
     if (Boolean(isAllowed) === false) {
+      udpProxySocket.destroy();
       return;
     }
 
-    this.nextMiddleware(msg, rinfo, send);
+    this.nextMiddleware(udpProxySocket);
   });
 };
