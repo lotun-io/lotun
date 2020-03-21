@@ -18,15 +18,15 @@
     "test:prettier": "prettier --check \"src/**/*.ts\""
   },
   "devDependencies": {
-    "@types/node": "^12.12.29",
+    "@types/node": "^12.12.30",
     "electron": "^8.1.0",
-    "electron-builder": "^22.4.0",
+    "electron-builder": "^22.4.1",
     "prettier": "^1.19.1",
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@lotun/cli": "^1.0.12",
-    "@lotun/client": "^1.0.5",
-    "electron-updater": "^4.0.4"
+    "@lotun/cli": "^1.0.13",
+    "@lotun/client": "^1.0.7",
+    "electron-updater": "^4.2.5"
   }
 }

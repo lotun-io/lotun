@@ -19,8 +19,8 @@
   "description": "Monorepo for all Lotun Client packages (client, cli and electron app)",
   "dependencies": {},
   "devDependencies": {
-    "lerna": "^3.4.3",
+    "lerna": "^3.20.2",
     "prettier": "^1.19.1",
-    "typescript": "^3.4.5"
+    "typescript": "^3.8.3"
   }
 }
