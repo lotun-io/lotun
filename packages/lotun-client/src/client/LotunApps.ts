@@ -72,7 +72,10 @@ export class LotunApps {
         .map(async app => {
           const ep = this.entryPointsMap.get(app.id);
           if (!ep) {
-            const entryPoint = new EntryPoint({ app });
+            const entryPoint = new EntryPoint({
+              lotunSocket: this.lotunSocket,
+              app,
+            });
             await entryPoint.init();
             this.entryPointsMap.set(app.id, entryPoint);
           }

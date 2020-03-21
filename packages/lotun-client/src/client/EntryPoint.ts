@@ -3,6 +3,10 @@ import path from 'path';
 import net from 'net';
 import dgram from 'dgram';
 import { once } from 'events';
+import { PassThrough, Duplex, pipeline } from 'stream';
+import duplexify from 'duplexify';
+import { MessageStream } from './MessageStream';
+import { LotunSocket } from './LotunSocket';
 
 const debug = debugRoot.extend('EntryPoint');
 
@@ -20,10 +24,12 @@ type App = {
 
 export class EntryPoint {
   private app: App;
+  private lotunSocket: LotunSocket;
   private tcpServer?: net.Server;
   private udpServer?: dgram.Socket;
-  private activeConnections: Set<net.Socket>;
-  constructor(options: { app: App }) {
+  private activeConnections: Set<Duplex>;
+  constructor(options: { lotunSocket: LotunSocket; app: App }) {
+    this.lotunSocket = options.lotunSocket;
     this.app = options.app;
     this.activeConnections = new Set();
   }
@@ -34,7 +40,6 @@ export class EntryPoint {
       const tcpServer = net.createServer();
       tcpServer.on('connection', socket => {
         this.activeConnections.add(socket);
-
         socket.on('close', () => {
           this.activeConnections.delete(socket);
         });
@@ -42,6 +47,18 @@ export class EntryPoint {
         socket.on('error', () => {
           socket.destroy();
         });
+
+        const appId = this.app.id;
+        const { remoteAddress, remotePort } = socket;
+
+        const duplex = this.lotunSocket.createDuplex({
+          appId,
+          remoteAddress,
+          remotePort,
+        });
+
+        pipeline(socket, duplex);
+        pipeline(duplex, socket);
       });
 
       tcpServer.listen({ port });
@@ -53,7 +70,43 @@ export class EntryPoint {
       udpServer.bind({ port });
 
       udpServer.on('message', (msg, rinfo) => {
-        console.log('!! message !!');
+        const readable = new PassThrough();
+        const writeable = new PassThrough();
+        const socket = duplexify(writeable, readable);
+
+        this.activeConnections.add(socket);
+        socket.on('close', () => {
+          this.activeConnections.delete(socket);
+        });
+
+        const messageStream = new MessageStream(socket);
+        messageStream.on('error', () => {
+          socket.destroy();
+        });
+
+        messageStream.on('message', (type, payload) => {
+          try {
+            if (type === 'message') {
+              const message = payload as { msg: string };
+              const msg = Buffer.from(message.msg);
+              udpServer.send(msg, rinfo.port, rinfo.address);
+            }
+          } catch (err) {
+            messageStream.destroy();
+          }
+        });
+
+        messageStream.send('message', { msg: msg.toString() });
+
+        const appId = this.app.id;
+
+        const duplex = this.lotunSocket.createDuplex({
+          appId,
+          rinfo,
+        });
+
+        pipeline(socket, duplex);
+        pipeline(duplex, socket);
       });
 
       await once(udpServer, 'listening');
@@ -68,7 +121,7 @@ export class EntryPoint {
     }
 
     if (this.tcpServer) {
-      this.tcpServer?.close();
+      this.tcpServer.close();
       await once(this.tcpServer, 'close');
     }
 

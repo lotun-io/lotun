@@ -137,7 +137,6 @@ export class LotunSocket extends EventEmitter {
     });
   }
 
-  // @TODO types
   createDuplex(payload: any) {
     const data: { type: HandshakeType; payload: any } = {
       type: 'MULTIPLEX',
