@@ -3,12 +3,12 @@ import path from 'path';
 import { createNpmImportAsync } from './runtime-install';
 import { EventEmitter } from 'events';
 import { Agent as HttpAgent, IncomingMessage, AgentOptions } from 'http';
+import { pipeline } from 'stream';
 import net from 'net';
 import vm from 'vm';
 import { RemoteInfo } from 'dgram';
 
 const matcheRequires = require('match-requires');
-
 const debug = debugRoot.extend('Rule');
 
 import {
@@ -16,6 +16,8 @@ import {
   createHttpAgent,
   CreateHttpAgentOptions,
 } from './utils';
+import { Duplex } from 'stream';
+import { MessageStream } from './MessageStream';
 
 export type App = {
   id: string;
@@ -27,7 +29,86 @@ export type App = {
   };
 };
 
-class NextMiddlewareAgent extends HttpAgent {
+export interface UdpProxySocket {
+  on(
+    event: 'message',
+    listener: (msg: Buffer, rinfo: RemoteInfo) => void,
+  ): this;
+  once(
+    event: 'message',
+    listener: (msg: Buffer, rinfo: RemoteInfo) => void,
+  ): this;
+  on(event: 'close', listener: (msg: Buffer, rinfo: RemoteInfo) => void): this;
+  once(
+    event: 'close',
+    listener: (msg: Buffer, rinfo: RemoteInfo) => void,
+  ): this;
+}
+export class UdpProxySocket extends EventEmitter {
+  private messageStream!: MessageStream;
+  socket!: net.Socket;
+  rinfo: RemoteInfo;
+
+  constructor(duplex: Duplex, rinfo: RemoteInfo) {
+    super();
+    this.rinfo = rinfo;
+    const socket = createSocketPair({ port: 80 }, remoteSocket => {
+      this.socket = remoteSocket;
+      this.socket.setTimeout(30 * 1000);
+
+      this.socket.on('timeout', () => {
+        this.socket.destroy();
+      });
+
+      this.socket.on('error', () => {
+        this.socket.destroy();
+      });
+
+      this.socket.on('close', (...args: any[]) => {
+        this.emit('close', ...args);
+      });
+
+      this.messageStream = new MessageStream(this.socket);
+      this.messageStream.on('error', () => {
+        this.messageStream.destroy();
+      });
+
+      this.messageStream.on('message', (type, payload) => {
+        if (type === 'message') {
+          const data = payload as { msg: string; rinfo: RemoteInfo };
+          const msg = Buffer.from(data.msg);
+          this.emit('message', msg, rinfo);
+        }
+      });
+    });
+
+    pipeline(duplex, socket);
+    pipeline(socket, duplex);
+  }
+
+  setTimeout(...args: any[]) {
+    // @ts-ignore
+    this.socket.setTimeout(...args);
+  }
+
+  send(msg: Buffer) {
+    this.messageStream.send('message', { msg: msg.toString() });
+  }
+
+  pause() {
+    this.socket.pause();
+  }
+
+  resume() {
+    this.socket.resume();
+  }
+
+  destroy() {
+    this.socket.destroy();
+  }
+}
+
+export class NextMiddlewareAgent extends HttpAgent {
   private __remoteOptions: { remoteAddress?: string; remotePort?: string } = {};
   private ctx: RuleContext;
   constructor(ctx: RuleContext, opts?: AgentOptions) {
@@ -65,12 +146,12 @@ export interface RuleContext {
   on(event: 'connection', listener: (socket: net.Socket) => void): this;
   once(event: 'connection', listener: (socket: net.Socket) => void): this;
   on(
-    event: 'message',
-    listener: (msg: Buffer, rinfo: RemoteInfo) => void,
+    event: 'udpProxySocket',
+    listener: (udpProxySocket: UdpProxySocket) => void,
   ): this;
   once(
-    event: 'message',
-    listener: (msg: Buffer, rinfo: RemoteInfo) => void,
+    event: 'udpProxySocket',
+    listener: (udpProxySocket: UdpProxySocket) => void,
   ): this;
   on(event: 'destroy', listener: () => void): this;
   once(event: 'destroy', listener: () => void): this;
@@ -122,7 +203,6 @@ export class Rule {
   optionsScript: string;
   installPath: string;
   context: RuleContext;
-  requirePackages = new Map<string, any>();
 
   constructor(options: {
     id: string;
@@ -260,17 +340,29 @@ export class Rule {
   }
 
   connection(...options: any[]) {
+    const duplex = options[0];
     if (this.context.app.type === 'HTTP' || this.context.app.type === 'TCP') {
-      this.context.emit('connection', ...options);
+      const handshakeData = options[1];
+      const { remoteAddress, remotePort } = handshakeData;
+
+      const socket = createSocketPair(
+        { port: 80, remoteAddress, remotePort },
+        remoteSocket => {
+          this.context.emit('connection', remoteSocket);
+        },
+      );
+
+      pipeline(duplex, socket);
+      pipeline(socket, duplex);
     } else if (this.context.app.type === 'UDP') {
-      this.context.emit('message', ...options);
+      const handshakeData = options[1];
+      const { rinfo } = handshakeData;
+      const udpProxySocket = new UdpProxySocket(duplex, rinfo);
+      this.context.emit('udpProxySocket', udpProxySocket);
     }
   }
 
   destroy() {
     this.context.emit('destroy');
-    for (const key of this.requirePackages.keys()) {
-      this.requirePackages.delete(key);
-    }
   }
 }

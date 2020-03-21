@@ -1,9 +1,7 @@
-import { debug as debugRoot, createSocketPair } from './utils';
-import net from 'net';
-import { RemoteInfo } from 'dgram';
+import { debug as debugRoot } from './utils';
 import { Rule, App } from './Rule';
-import { MessageStream } from './MessageStream';
-import { Duplex, pipeline } from 'stream';
+import { Duplex } from 'stream';
+
 const debug = debugRoot.extend('ForwardPoint');
 
 export class ForwardPoint {
@@ -23,7 +21,6 @@ export class ForwardPoint {
     const duplex = options[0] as Duplex;
 
     if (this.middlewares.length === 0) {
-      // @TODO notify no forward rules ?!
       duplex.destroy();
       return;
     }
@@ -34,47 +31,7 @@ export class ForwardPoint {
       this.activeConnections.delete(duplex);
     });
 
-    if (this.app.type === 'HTTP' || this.app.type === 'TCP') {
-      const handshakeData = options[1];
-      const { remoteAddress, remotePort } = handshakeData;
-
-      const socket = createSocketPair(
-        { port: 80, remoteAddress, remotePort },
-        remoteSocket => {
-          this.middlewares[0].rule.connection(remoteSocket);
-        },
-      );
-
-      pipeline(duplex, socket);
-      pipeline(socket, duplex);
-
-      this.middlewares[0].rule.connection(...options);
-      return;
-    }
-
-    if (this.app.type === 'UDP') {
-      this.activeConnections.add(duplex);
-      const messageStream = new MessageStream(duplex);
-
-      const send = function(msg: Buffer) {
-        messageStream.send('message', { msg: msg.toString() });
-      };
-
-      messageStream.on('error', () => {
-        duplex.destroy();
-      });
-
-      messageStream.on('message', (type, payload) => {
-        if (type === 'message') {
-          const data = payload as { msg: string; rinfo: RemoteInfo };
-          const { msg, rinfo } = data;
-          this.middlewares[0].rule.connection(msg, rinfo, send, messageStream);
-        }
-      });
-      return;
-    }
-
-    duplex.destroy();
+    this.middlewares[0].rule.connection(...options);
   }
 
   async addMiddleware(
