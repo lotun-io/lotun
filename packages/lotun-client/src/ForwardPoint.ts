@@ -4,7 +4,6 @@ import { App, Middleware, Rule, UdpProxySocket } from './Middleware';
 import { Duplex } from 'stream';
 
 const debug = debugRoot.extend('ForwardPoint');
-const eventDebug = require('event-debug');
 
 export class ForwardPoint {
   private app: App;

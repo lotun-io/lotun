@@ -8,8 +8,7 @@ import { MessageStream } from './MessageStream';
 
 export { WebSocket };
 
-const debug = Debug('LotubSocket');
-const eventDebug = require('event-debug');
+const debug = Debug('LotunSocket');
 
 type HandshakeType = 'MESSAGE' | 'MULTIPLEX';
 type HandshakeData = any;
@@ -102,8 +101,6 @@ export class LotunSocket extends EventEmitter {
         allowHalfOpen: false,
       },
     });
-
-    eventDebug(this.bpMux, 'bpMux');
 
     this.bpMux.on('handshake', (duplex, handshakeData) => {
       if (handshakeData) {
