@@ -24,7 +24,7 @@ export type Account = Node & {
 export enum AppTypeEnum {
   Http = 'HTTP',
   Tcp = 'TCP',
-  Udp = 'UDP'
+  Udp = 'UDP',
 }
 
 export type ForwardPoint = {
@@ -43,39 +43,42 @@ export type App = {
   createdAt: Scalars['String'];
 };
 
-export type HttpApp = App & Node & {
-  __typename?: 'HttpApp';
-  id: Scalars['ID'];
-  type: AppTypeEnum;
-  name: Scalars['String'];
-  entryPoint?: Maybe<EntryPoint>;
-  forwardPoint?: Maybe<ForwardPoint>;
-  updatedAt: Scalars['String'];
-  createdAt: Scalars['String'];
-  entryPath: Scalars['String'];
-};
+export type HttpApp = App &
+  Node & {
+    __typename?: 'HttpApp';
+    id: Scalars['ID'];
+    type: AppTypeEnum;
+    name: Scalars['String'];
+    entryPoint?: Maybe<EntryPoint>;
+    forwardPoint?: Maybe<ForwardPoint>;
+    updatedAt: Scalars['String'];
+    createdAt: Scalars['String'];
+    entryPath: Scalars['String'];
+  };
 
-export type TcpApp = App & Node & {
-  __typename?: 'TcpApp';
-  id: Scalars['ID'];
-  type: AppTypeEnum;
-  name: Scalars['String'];
-  entryPoint?: Maybe<EntryPoint>;
-  forwardPoint?: Maybe<ForwardPoint>;
-  updatedAt: Scalars['String'];
-  createdAt: Scalars['String'];
-};
+export type TcpApp = App &
+  Node & {
+    __typename?: 'TcpApp';
+    id: Scalars['ID'];
+    type: AppTypeEnum;
+    name: Scalars['String'];
+    entryPoint?: Maybe<EntryPoint>;
+    forwardPoint?: Maybe<ForwardPoint>;
+    updatedAt: Scalars['String'];
+    createdAt: Scalars['String'];
+  };
 
-export type UdpApp = App & Node & {
-  __typename?: 'UdpApp';
-  id: Scalars['ID'];
-  type: AppTypeEnum;
-  name: Scalars['String'];
-  entryPoint?: Maybe<EntryPoint>;
-  forwardPoint?: Maybe<ForwardPoint>;
-  updatedAt: Scalars['String'];
-  createdAt: Scalars['String'];
-};
+export type UdpApp = App &
+  Node & {
+    __typename?: 'UdpApp';
+    id: Scalars['ID'];
+    type: AppTypeEnum;
+    name: Scalars['String'];
+    entryPoint?: Maybe<EntryPoint>;
+    forwardPoint?: Maybe<ForwardPoint>;
+    updatedAt: Scalars['String'];
+    createdAt: Scalars['String'];
+  };
 
 export type AppsConnection = {
   __typename?: 'AppsConnection';
@@ -90,7 +93,7 @@ export type AppsEdge = {
 };
 
 export enum AppsOrderBySortEnum {
-  CreatedAt = 'CREATED_AT'
+  CreatedAt = 'CREATED_AT',
 }
 
 export type AppsOrderByInput = {
@@ -148,7 +151,6 @@ export type Query = {
   me: User;
 };
 
-
 export type QueryAppsArgs = {
   first?: Maybe<Scalars['Int']>;
   last?: Maybe<Scalars['Int']>;
@@ -158,7 +160,6 @@ export type QueryAppsArgs = {
   filter?: Maybe<AppsFilterInput>;
 };
 
-
 export type QueryDeviceTunnelsArgs = {
   first?: Maybe<Scalars['Int']>;
   last?: Maybe<Scalars['Int']>;
@@ -167,7 +168,6 @@ export type QueryDeviceTunnelsArgs = {
   orderBy?: Maybe<Array<DeviceTunnelsOrderByInput>>;
 };
 
-
 export type QueryDevicesArgs = {
   first?: Maybe<Scalars['Int']>;
   last?: Maybe<Scalars['Int']>;
@@ -175,7 +175,6 @@ export type QueryDevicesArgs = {
   before?: Maybe<Scalars['String']>;
   orderBy?: Maybe<Array<DevicesOrderByInput>>;
 };
-
 
 export type QueryDomainsArgs = {
   first?: Maybe<Scalars['Int']>;
@@ -186,7 +185,6 @@ export type QueryDomainsArgs = {
   filter?: Maybe<DomainsFilterInput>;
 };
 
-
 export type QueryEntryPointsArgs = {
   first?: Maybe<Scalars['Int']>;
   last?: Maybe<Scalars['Int']>;
@@ -196,7 +194,6 @@ export type QueryEntryPointsArgs = {
   filter?: Maybe<EntryPointsFilterInput>;
 };
 
-
 export type QueryExternalIpsArgs = {
   first?: Maybe<Scalars['Int']>;
   last?: Maybe<Scalars['Int']>;
@@ -204,7 +201,6 @@ export type QueryExternalIpsArgs = {
   before?: Maybe<Scalars['String']>;
   orderBy?: Maybe<Array<ExternalIpsOrderByInput>>;
 };
-
 
 export type QueryMiddlewaresArgs = {
   first?: Maybe<Scalars['Int']>;
@@ -215,17 +211,14 @@ export type QueryMiddlewaresArgs = {
   filter?: Maybe<MiddlewaresFilterInput>;
 };
 
-
 export type QueryNodeArgs = {
   id: Scalars['ID'];
 };
-
 
 export type QuerySearchArgs = {
   query: Scalars['String'];
   typename?: Maybe<TypenameEnum>;
 };
-
 
 export type QueryRulesArgs = {
   first?: Maybe<Scalars['Int']>;
@@ -263,120 +256,97 @@ export type Mutation = {
   updateUser: User;
 };
 
-
 export type MutationCreateHttpAppArgs = {
   input: CreateHttpApp;
 };
-
 
 export type MutationCreateTcpAppArgs = {
   input: CreateTcpApp;
 };
 
-
 export type MutationCreateUdpAppArgs = {
   input: CreateUdpApp;
 };
-
 
 export type MutationUpdateAppArgs = {
   id: Scalars['IDGlobal'];
   input: UpdateAppInput;
 };
 
-
 export type MutationDeleteAppArgs = {
   id: Scalars['IDGlobal'];
 };
 
-
 export type MutationCreateDeviceArgs = {
   input?: Maybe<CreateDeviceInput>;
 };
-
 
 export type MutationUpdateDeviceArgs = {
   id: Scalars['IDGlobal'];
   input: UpdateDeviceInput;
 };
 
-
 export type MutationDeleteDeviceArgs = {
   id: Scalars['IDGlobal'];
 };
-
 
 export type MutationCreateDomainArgs = {
   input: CreateDomainInput;
 };
 
-
 export type MutationVerifyDomainArgs = {
   id: Scalars['IDGlobal'];
 };
-
 
 export type MutationDeleteDomainArgs = {
   id: Scalars['IDGlobal'];
 };
 
-
 export type MutationCreateHostnameArgs = {
   input: CreateHostname;
 };
-
 
 export type MutationCreateExternalPortArgs = {
   input?: Maybe<CreateExternalPort>;
 };
 
-
 export type MutationCreateDevicePortArgs = {
   input: CreateDevicePort;
 };
-
 
 export type MutationUpdateEntryPointArgs = {
   id: Scalars['IDGlobal'];
   input: UpdateEntryPointInput;
 };
 
-
 export type MutationDeleteEntryPointArgs = {
   id: Scalars['IDGlobal'];
 };
 
-
 export type MutationCreateMiddlewareArgs = {
   input: CreateMiddlewareInput;
 };
-
 
 export type MutationUpdateMiddlewareArgs = {
   id: Scalars['IDGlobal'];
   input: UpdateMiddlewareInput;
 };
 
-
 export type MutationUpdateMiddlewaresOrderArgs = {
   input: UpdateMiddlewaresOrderInput;
 };
-
 
 export type MutationDeleteMiddlewareArgs = {
   id: Scalars['IDGlobal'];
 };
 
-
 export type MutationCreateRuleArgs = {
   input: CreateRuleInput;
 };
 
-
 export type MutationDeleteRuleArgs = {
   id: Scalars['IDGlobal'];
 };
-
 
 export type MutationUpdateUserArgs = {
   id: Scalars['IDGlobal'];
@@ -432,7 +402,7 @@ export type DeviceTunnelsEdge = {
 };
 
 export enum DeviceTunnelsOrderBySortEnum {
-  CreatedAt = 'CREATED_AT'
+  CreatedAt = 'CREATED_AT',
 }
 
 export type DeviceTunnelsOrderByInput = {
@@ -442,7 +412,7 @@ export type DeviceTunnelsOrderByInput = {
 
 export enum DeviceStatusEnum {
   Online = 'ONLINE',
-  Offline = 'OFFLINE'
+  Offline = 'OFFLINE',
 }
 
 export type Device = Node & {
@@ -469,7 +439,7 @@ export type DevicesEdge = {
 };
 
 export enum DevicesOrderBySortEnum {
-  CreatedAt = 'CREATED_AT'
+  CreatedAt = 'CREATED_AT',
 }
 
 export type DevicesOrderByInput = {
@@ -493,7 +463,7 @@ export type UpdateDeviceInput = {
 
 export enum DomainTypeEnum {
   Lotun = 'LOTUN',
-  Account = 'ACCOUNT'
+  Account = 'ACCOUNT',
 }
 
 export type Domain = Node & {
@@ -510,7 +480,7 @@ export type Domain = Node & {
 
 export enum DomainDnsRecordType {
   Cname = 'CNAME',
-  A = 'A'
+  A = 'A',
 }
 
 export type DomainDnsRecord = {
@@ -542,7 +512,7 @@ export type DomainsEdge = {
 };
 
 export enum DomainsOrderBySortEnum {
-  CreatedAt = 'CREATED_AT'
+  CreatedAt = 'CREATED_AT',
 }
 
 export type DomainsOrderByInput = {
@@ -566,7 +536,7 @@ export type UpdateDomainInput = {
 export enum EntryPointTypeEnum {
   Hostname = 'HOSTNAME',
   ExternalPort = 'EXTERNAL_PORT',
-  DevicePort = 'DEVICE_PORT'
+  DevicePort = 'DEVICE_PORT',
 }
 
 export type EntryPoint = {
@@ -578,41 +548,44 @@ export type EntryPoint = {
   createdAt: Scalars['String'];
 };
 
-export type Hostname = EntryPoint & Node & {
-  __typename?: 'Hostname';
-  id: Scalars['ID'];
-  type: EntryPointTypeEnum;
-  expireAt?: Maybe<Scalars['String']>;
-  updatedAt: Scalars['String'];
-  createdAt: Scalars['String'];
-  name: Scalars['String'];
-  hostname: Scalars['String'];
-  domain?: Maybe<Domain>;
-};
+export type Hostname = EntryPoint &
+  Node & {
+    __typename?: 'Hostname';
+    id: Scalars['ID'];
+    type: EntryPointTypeEnum;
+    expireAt?: Maybe<Scalars['String']>;
+    updatedAt: Scalars['String'];
+    createdAt: Scalars['String'];
+    name: Scalars['String'];
+    hostname: Scalars['String'];
+    domain?: Maybe<Domain>;
+  };
 
-export type ExternalPort = EntryPoint & Node & {
-  __typename?: 'ExternalPort';
-  id: Scalars['ID'];
-  type: EntryPointTypeEnum;
-  expireAt?: Maybe<Scalars['String']>;
-  updatedAt: Scalars['String'];
-  createdAt: Scalars['String'];
-  name: Scalars['String'];
-  port: Scalars['String'];
-  externalIp?: Maybe<ExternalIp>;
-};
+export type ExternalPort = EntryPoint &
+  Node & {
+    __typename?: 'ExternalPort';
+    id: Scalars['ID'];
+    type: EntryPointTypeEnum;
+    expireAt?: Maybe<Scalars['String']>;
+    updatedAt: Scalars['String'];
+    createdAt: Scalars['String'];
+    name: Scalars['String'];
+    port: Scalars['String'];
+    externalIp?: Maybe<ExternalIp>;
+  };
 
-export type DevicePort = EntryPoint & Node & {
-  __typename?: 'DevicePort';
-  id: Scalars['ID'];
-  type: EntryPointTypeEnum;
-  expireAt?: Maybe<Scalars['String']>;
-  updatedAt: Scalars['String'];
-  createdAt: Scalars['String'];
-  name: Scalars['String'];
-  port: Scalars['String'];
-  device?: Maybe<Device>;
-};
+export type DevicePort = EntryPoint &
+  Node & {
+    __typename?: 'DevicePort';
+    id: Scalars['ID'];
+    type: EntryPointTypeEnum;
+    expireAt?: Maybe<Scalars['String']>;
+    updatedAt: Scalars['String'];
+    createdAt: Scalars['String'];
+    name: Scalars['String'];
+    port: Scalars['String'];
+    device?: Maybe<Device>;
+  };
 
 export type EntryPointsConnection = {
   __typename?: 'EntryPointsConnection';
@@ -627,7 +600,7 @@ export type EntryPointsEdge = {
 };
 
 export enum EntryPointsOrderBySortEnum {
-  CreatedAt = 'CREATED_AT'
+  CreatedAt = 'CREATED_AT',
 }
 
 export type EntryPointsOrderByInput = {
@@ -682,7 +655,7 @@ export type ExternalIpsEdge = {
 };
 
 export enum ExternalIpsOrderBySortEnum {
-  CreatedAt = 'CREATED_AT'
+  CreatedAt = 'CREATED_AT',
 }
 
 export type ExternalIpsOrderByInput = {
@@ -713,7 +686,7 @@ export type MiddlewaresEdge = {
 
 export enum MiddlewaresOrderBySortEnum {
   Priority = 'PRIORITY',
-  CreatedAt = 'CREATED_AT'
+  CreatedAt = 'CREATED_AT',
 }
 
 export type MiddlewaresOrderByInput = {
@@ -746,7 +719,6 @@ export type UpdateMiddlewaresOrderInput = {
   middlewares: Array<MiddlewareIdInput>;
 };
 
-
 export type Node = {
   id: Scalars['ID'];
 };
@@ -761,7 +733,7 @@ export enum TypenameEnum {
   EntryPoint = 'ENTRY_POINT',
   Hostname = 'HOSTNAME',
   ExternalPort = 'EXTERNAL_PORT',
-  DevicePort = 'DEVICE_PORT'
+  DevicePort = 'DEVICE_PORT',
 }
 
 export type ConnectionPageInfo = {
@@ -778,24 +750,24 @@ export type ConnectionPageInfo = {
 
 export enum OrderByDirectionEnum {
   Asc = 'ASC',
-  Desc = 'DESC'
+  Desc = 'DESC',
 }
 
 export enum ContinentEnum {
-  Europe = 'EUROPE'
+  Europe = 'EUROPE',
 }
 
 export enum RegionEnum {
-  EuropeWest3 = 'EUROPE_WEST3'
+  EuropeWest3 = 'EUROPE_WEST3',
 }
 
 export enum ZoneEnum {
-  EuropeWest3B = 'EUROPE_WEST3_B'
+  EuropeWest3B = 'EUROPE_WEST3_B',
 }
 
 export enum RuleTypeEnum {
   Lotun = 'LOTUN',
-  Account = 'ACCOUNT'
+  Account = 'ACCOUNT',
 }
 
 export type Rule = Node & {
@@ -826,7 +798,7 @@ export type RulesEdge = {
 };
 
 export enum RulesOrderBySortEnum {
-  CreatedAt = 'CREATED_AT'
+  CreatedAt = 'CREATED_AT',
 }
 
 export type RulesOrderByInput = {
@@ -876,33 +848,39 @@ export type UpdateUserInput = {
 
 export type GenerateDeviceTokenQueryVariables = {};
 
-
-export type GenerateDeviceTokenQuery = (
-  { __typename?: 'Query' }
-  & { generateDeviceToken: (
-    { __typename?: 'DeviceToken' }
-    & Pick<DeviceToken, 'token'>
-  ) }
-);
-
+export type GenerateDeviceTokenQuery = { __typename?: 'Query' } & {
+  generateDeviceToken: { __typename?: 'DeviceToken' } & Pick<
+    DeviceToken,
+    'token'
+  >;
+};
 
 export const GenerateDeviceTokenDocument = gql`
-    query generateDeviceToken {
-  generateDeviceToken {
-    token
+  query generateDeviceToken {
+    generateDeviceToken {
+      token
+    }
   }
-}
-    `;
+`;
 
 export type SdkFunctionWrapper = <T>(action: () => Promise<T>) => Promise<T>;
 
-
-const defaultWrapper: SdkFunctionWrapper = sdkFunction => sdkFunction();
-export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
+const defaultWrapper: SdkFunctionWrapper = (sdkFunction) => sdkFunction();
+export function getSdk(
+  client: GraphQLClient,
+  withWrapper: SdkFunctionWrapper = defaultWrapper,
+) {
   return {
-    generateDeviceToken(variables?: GenerateDeviceTokenQueryVariables): Promise<GenerateDeviceTokenQuery> {
-      return withWrapper(() => client.request<GenerateDeviceTokenQuery>(print(GenerateDeviceTokenDocument), variables));
-    }
+    generateDeviceToken(
+      variables?: GenerateDeviceTokenQueryVariables,
+    ): Promise<GenerateDeviceTokenQuery> {
+      return withWrapper(() =>
+        client.request<GenerateDeviceTokenQuery>(
+          print(GenerateDeviceTokenDocument),
+          variables,
+        ),
+      );
+    },
   };
 }
 export type Sdk = ReturnType<typeof getSdk>;
