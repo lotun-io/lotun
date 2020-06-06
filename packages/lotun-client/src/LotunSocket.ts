@@ -6,7 +6,10 @@ import WebSocket from 'ws';
 import si from 'systeminformation';
 import { MessageStream } from './MessageStream';
 
+export { WebSocket };
+
 const debug = Debug('LotubSocket');
+const eventDebug = require('event-debug');
 
 type HandshakeType = 'MESSAGE' | 'MULTIPLEX';
 type HandshakeData = any;
@@ -29,8 +32,10 @@ export type LotunMessageApp = {
   };
   middlewares: {
     id: string;
+    name: string;
     optionsScript: string;
     priority: string;
+    updatedAt: string;
     rule: {
       id: string;
       name: string;
@@ -87,13 +92,18 @@ export class LotunSocket extends EventEmitter {
     }
 
     this.bpMux = new BPMux(this.wsStream, {
-      parse_handshake_data: data => {
+      parse_handshake_data: (data) => {
         if (data.length > 0) {
           return JSON.parse(data.toString());
         }
         return null;
       },
+      peer_multiplex_options: {
+        allowHalfOpen: false,
+      },
     });
+
+    eventDebug(this.bpMux, 'bpMux');
 
     this.bpMux.on('handshake', (duplex, handshakeData) => {
       if (handshakeData) {
@@ -113,7 +123,7 @@ export class LotunSocket extends EventEmitter {
       }
     });
 
-    this.bpMux.on('error', err => {
+    this.bpMux.on('error', (err) => {
       debug('bpMux.error', err);
     });
 
@@ -121,7 +131,7 @@ export class LotunSocket extends EventEmitter {
       debug('wsStream.close');
     });
 
-    this.wsStream.on('error', err => {
+    this.wsStream.on('error', (err) => {
       debug('wsStream.error', err);
     });
 
@@ -130,7 +140,7 @@ export class LotunSocket extends EventEmitter {
         this.emit('message', type, payload);
       });
 
-      this.messageStream!.on('error', err => {
+      this.messageStream!.on('error', (err) => {
         debug('messageStream.error', err);
         this.destroy();
       });
@@ -143,6 +153,7 @@ export class LotunSocket extends EventEmitter {
       payload: payload,
     };
     return this.bpMux.multiplex({
+      allowHalfOpen: false,
       handshake_data: Buffer.from(JSON.stringify(data)),
     });
   }
@@ -168,8 +179,6 @@ export class LotunSocket extends EventEmitter {
       duplex.on('error', () => {
         duplex.destroy();
       });
-
-      duplex.on('close', () => {});
     }
 
     this.messageStream = new MessageStream(duplex);
@@ -177,10 +186,10 @@ export class LotunSocket extends EventEmitter {
   }
 
   private async getClientInfo() {
-    const pjson = require('../../package.json');
+    const pjson = require('../package.json');
     const version = pjson.version as string;
 
-    const os = await si.osInfo().catch(err => {
+    const os = await si.osInfo().catch((err) => {
       debug(err);
       return undefined;
     });

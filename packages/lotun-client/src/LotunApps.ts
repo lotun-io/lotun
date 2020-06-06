@@ -1,8 +1,9 @@
+import { Duplex } from 'stream';
 import { debug as debugRoot } from './utils';
 import { LotunSocket, LotunMessageApps, LotunMessageApp } from './LotunSocket';
 import { EntryPoint } from './EntryPoint';
 import { ForwardPoint } from './ForwardPoint';
-import { Duplex } from 'stream';
+import { Queue } from './Queue';
 
 const debug = debugRoot.extend('LotunApps');
 
@@ -26,11 +27,11 @@ export class LotunApps {
   messageApps(apps: LotunMessageApps) {
     debug('messageApps', apps);
     this.queue.enqueue(async () => {
-      await this.deleteMissingForwardPoints(apps.map(app => app.id));
+      await this.deleteMissingForwardPoints(apps.map((app) => app.id));
       await this.upsertForwardPoints(apps);
 
       const deviceEntryPoints = apps
-        .map(app => {
+        .map((app) => {
           if (app.entryPoint.type === 'DEVICE_PORT') {
             return app;
           }
@@ -44,7 +45,9 @@ export class LotunApps {
 
       debug('lotunEntryPoints', deviceEntryPoints);
 
-      await this.deleteMissingEntryPoints(deviceEntryPoints.map(app => app.id));
+      await this.deleteMissingEntryPoints(
+        deviceEntryPoints.map((app) => app.id),
+      );
       await this.upsertEntryPoints(deviceEntryPoints);
     });
   }
@@ -54,6 +57,8 @@ export class LotunApps {
     const { appId } = handshakeData as { appId: string };
 
     const fp = this.forwardPointsMap.get(appId);
+    debug(fp);
+
     if (!fp) {
       duplex.destroy();
       return;
@@ -69,7 +74,7 @@ export class LotunApps {
   async upsertEntryPoints(apps: LotunMessageApps) {
     await Promise.all(
       apps
-        .map(async app => {
+        .map(async (app) => {
           const ep = this.entryPointsMap.get(app.id);
           if (!ep) {
             const entryPoint = new EntryPoint({
@@ -81,7 +86,7 @@ export class LotunApps {
           }
         })
         .map((one, index) => {
-          one.catch(err => {
+          one.catch((err) => {
             debug('upsertEntryPoints.error', `appId: ${apps[index].id}`, err);
           });
           return one;
@@ -90,42 +95,36 @@ export class LotunApps {
   }
 
   async upsertForwardPoints(apps: LotunMessageApps) {
-    await Promise.all([
-      apps.map(async (app, index) => {
-        const oldFp = this.forwardPointsMap.get(app.id);
+    for (const index in apps) {
+      const app = apps[index];
 
-        const newFp = new ForwardPoint({
-          app: app,
-          configDir: this.configDir,
-        });
+      const oldFp = this.forwardPointsMap.get(app.id);
 
-        try {
-          await Promise.all(
-            app.middlewares.map(async middleware => {
-              await newFp.addMiddleware(
-                {
-                  id: middleware.rule.id,
-                  name: middleware.rule.name,
-                  version: middleware.rule.version,
-                  ruleScript: middleware.rule.ruleScript,
-                  optionsScript: middleware.optionsScript,
-                },
-                middleware.priority,
-              );
-            }),
+      const newFp = new ForwardPoint({
+        app: app,
+        configDir: this.configDir,
+      });
+
+      try {
+        for (const middleware of app.middlewares) {
+          await newFp.addMiddleware(
+            {
+              ...middleware,
+            },
+            middleware.priority,
           );
-
-          this.forwardPointsMap.set(app.id, newFp);
-        } catch (err) {
-          debug('upsertForwardPoints.error', `appId: ${apps[index].id}`, err);
-          await newFp.destroy();
         }
 
-        if (oldFp) {
-          oldFp.destroy();
-        }
-      }),
-    ]);
+        this.forwardPointsMap.set(app.id, newFp);
+      } catch (err) {
+        debug('upsertForwardPoints.error', `appId: ${apps[index].id}`, err);
+        await newFp.destroy();
+      }
+
+      if (oldFp) {
+        oldFp.destroy();
+      }
+    }
   }
 
   getForwardPoint(id: string) {
@@ -133,12 +132,12 @@ export class LotunApps {
   }
 
   async deleteMissingEntryPoints(ids: string[]) {
-    const missingEpIds = [...this.entryPointsMap.keys()].filter(one => {
+    const missingEpIds = [...this.entryPointsMap.keys()].filter((one) => {
       return !ids.includes(one);
     });
     debug('missingEpId', missingEpIds);
     await Promise.all(
-      missingEpIds.map(async id => {
+      missingEpIds.map(async (id) => {
         const entryPoint = this.entryPointsMap.get(id);
         if (entryPoint) {
           await entryPoint.destroy();
@@ -149,12 +148,12 @@ export class LotunApps {
   }
 
   async deleteMissingForwardPoints(ids: string[]) {
-    const missingFpIds = [...this.forwardPointsMap.keys()].filter(one => {
+    const missingFpIds = [...this.forwardPointsMap.keys()].filter((one) => {
       return !ids.includes(one);
     });
     debug('missingFpId', missingFpIds);
     await Promise.all(
-      missingFpIds.map(async id => {
+      missingFpIds.map(async (id) => {
         const forwardPoint = this.forwardPointsMap.get(id);
         if (forwardPoint) {
           await forwardPoint.destroy();
@@ -178,43 +177,5 @@ export class LotunApps {
         this.forwardPointsMap.delete(id);
       }),
     );
-  }
-}
-
-class Queue {
-  private maxSimultaneously: number;
-  private __active: number;
-  private __queue: (() => any)[];
-
-  constructor(maxSimultaneously = 1) {
-    this.maxSimultaneously = maxSimultaneously;
-    this.__active = 0;
-    this.__queue = [];
-  }
-
-  async enqueue(func: () => any) {
-    if (++this.__active > this.maxSimultaneously) {
-      await new Promise(resolve => this.__queue.push(resolve));
-    }
-
-    try {
-      return await func();
-    } catch (err) {
-      throw err;
-    } finally {
-      this.__active--;
-      if (this.__queue.length > 0) {
-        let func = this.__queue.shift();
-        if (func) {
-          func();
-        }
-      }
-    }
-  }
-
-  async destroy() {
-    await new Promise(resolve => {
-      this.enqueue(resolve);
-    });
   }
 }

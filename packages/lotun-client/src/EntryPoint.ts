@@ -1,10 +1,8 @@
 import { debug as debugRoot } from './utils';
-import path from 'path';
 import net from 'net';
-import dgram from 'dgram';
+import dgram, { RemoteInfo } from 'dgram';
 import { once } from 'events';
-import { PassThrough, Duplex, pipeline } from 'stream';
-import duplexify from 'duplexify';
+import { Duplex, pipeline } from 'stream';
 import { MessageStream } from './MessageStream';
 import { LotunSocket } from './LotunSocket';
 
@@ -28,17 +26,20 @@ export class EntryPoint {
   private tcpServer?: net.Server;
   private udpServer?: dgram.Socket;
   private activeConnections: Set<Duplex>;
+  private udpProxyMap: Map<string, MessageStream>;
   constructor(options: { lotunSocket: LotunSocket; app: App }) {
     this.lotunSocket = options.lotunSocket;
     this.app = options.app;
     this.activeConnections = new Set();
+    this.udpProxyMap = new Map();
   }
 
   async init() {
     const port = Number(this.app.entryPoint.port);
+
     if (this.app.type === 'TCP') {
       const tcpServer = net.createServer();
-      tcpServer.on('connection', socket => {
+      tcpServer.on('connection', (socket) => {
         this.activeConnections.add(socket);
         socket.on('close', () => {
           this.activeConnections.delete(socket);
@@ -57,56 +58,64 @@ export class EntryPoint {
           remotePort,
         });
 
-        pipeline(socket, duplex);
-        pipeline(duplex, socket);
+        pipeline(socket, duplex, function () {});
+        pipeline(duplex, socket, function () {});
       });
 
       tcpServer.listen({ port });
       await once(tcpServer, 'listening');
 
       this.tcpServer = tcpServer;
-    } else {
+    }
+
+    if (this.app.type === 'UDP') {
       const udpServer = dgram.createSocket({ type: 'udp4' });
       udpServer.bind({ port });
 
       udpServer.on('message', (msg, rinfo) => {
-        const readable = new PassThrough();
-        const writeable = new PassThrough();
-        const socket = duplexify(writeable, readable);
-
-        this.activeConnections.add(socket);
-        socket.on('close', () => {
-          this.activeConnections.delete(socket);
-        });
-
-        const messageStream = new MessageStream(socket);
-        messageStream.on('error', () => {
-          socket.destroy();
-        });
-
-        messageStream.on('message', (type, payload) => {
-          try {
-            if (type === 'message') {
-              const message = payload as { msg: string };
-              const msg = Buffer.from(message.msg);
-              udpServer.send(msg, rinfo.port, rinfo.address);
-            }
-          } catch (err) {
-            messageStream.destroy();
-          }
-        });
-
-        messageStream.send('message', { msg: msg.toString() });
-
+        debug('udpServer', msg, rinfo);
         const appId = this.app.id;
 
-        const duplex = this.lotunSocket.createDuplex({
-          appId,
-          rinfo,
-        });
+        const senderId = `${rinfo.address}${rinfo.port}`;
+        let messageStream = this.udpProxyMap.get(senderId);
+        let duplex: Duplex;
 
-        pipeline(socket, duplex);
-        pipeline(duplex, socket);
+        if (!messageStream) {
+          debug('messageStream', msg, rinfo);
+          duplex = this.lotunSocket.createDuplex({
+            appId,
+            rinfo,
+          });
+
+          duplex.on('close', () => {
+            debug('duplex.close', rinfo);
+            this.activeConnections.delete(duplex);
+          });
+
+          this.activeConnections.add(duplex);
+
+          messageStream = new MessageStream(duplex);
+
+          this.udpProxyMap.set(senderId, messageStream);
+
+          messageStream.on('error', () => {
+            messageStream!.destroy();
+          });
+
+          messageStream.on('message', (type, payload) => {
+            try {
+              if (type === 'message') {
+                const message = payload as { msg: string; rinfo: RemoteInfo };
+                const msg = Buffer.from(message.msg);
+                udpServer.send(msg, rinfo.port, rinfo.address);
+              }
+            } catch (err) {
+              messageStream!.destroy();
+            }
+          });
+        }
+
+        messageStream.send('message', { msg: msg.toString(), rinfo });
       });
 
       await once(udpServer, 'listening');

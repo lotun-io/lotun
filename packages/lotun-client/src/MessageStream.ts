@@ -16,7 +16,7 @@ export class MessageStream extends EventEmitter {
     super();
     this.jsonStream = new JsonStream(duplex);
 
-    this.jsonStream.on('message', chunk => {
+    this.jsonStream.on('message', (chunk) => {
       this.emit('message', chunk.event, chunk.args);
     });
 
@@ -51,7 +51,7 @@ class JsonStream extends EventEmitter {
 
     const decoder = new StringDecoder();
 
-    duplex.on('data', async chunk => {
+    duplex.on('data', async (chunk) => {
       this.message += decoder.write(chunk);
 
       this._parse();
@@ -92,6 +92,7 @@ class JsonStream extends EventEmitter {
       return false;
     }
 
+    console.log('JsonStream.duplex.write', JSON.stringify(data));
     this.duplex.write(JSON.stringify(data) + '\n');
     return true;
   }

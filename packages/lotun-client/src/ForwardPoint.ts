@@ -1,12 +1,14 @@
 import { debug as debugRoot } from './utils';
-import { Rule, App } from './Rule';
+import { createSocket } from './Socket';
+import { App, Middleware, Rule, UdpProxySocket } from './Middleware';
 import { Duplex } from 'stream';
 
 const debug = debugRoot.extend('ForwardPoint');
+const eventDebug = require('event-debug');
 
 export class ForwardPoint {
   private app: App;
-  private middlewares: { rule: Rule; priority: string }[];
+  private middlewares: { middleware: Middleware; priority: string }[];
   private configDir: string;
   private activeConnections: Set<Duplex>;
 
@@ -31,30 +33,53 @@ export class ForwardPoint {
       this.activeConnections.delete(duplex);
     });
 
-    this.middlewares[0].rule.connection(...options);
+    if (this.app.type === 'HTTP' || this.app.type === 'TCP') {
+      const handshakeData = options[1];
+      const { remoteAddress, remotePort } = handshakeData;
+
+      const socket = createSocket(duplex, {
+        remoteAddress,
+        remotePort,
+      });
+
+      this.middlewares[0].middleware.connection(socket);
+    }
+
+    if (this.app.type === 'UDP') {
+      const handshakeData = options[1];
+      const { rinfo } = handshakeData;
+
+      const udpProxySocket = new UdpProxySocket({ duplex, rinfo });
+
+      udpProxySocket.on('message', (msg, rinfo) => {
+        debug('udpProxySocket', msg, rinfo);
+      });
+
+      this.middlewares[0].middleware.connection(udpProxySocket);
+    }
   }
 
   async addMiddleware(
     options: {
       id: string;
+      rule: Rule;
       name: string;
-      version: string;
       optionsScript: string;
-      ruleScript: string;
+      updatedAt: string;
     },
     priority: string,
   ) {
     debug('addMiddleware', options);
-    const rule = new Rule({
+    const middleware = new Middleware({
       app: this.app,
       configDir: this.configDir,
       ...options,
     });
 
-    await rule.init();
+    await middleware.init();
 
     this.middlewares.push({
-      rule,
+      middleware,
       priority,
     });
 
@@ -62,7 +87,7 @@ export class ForwardPoint {
   }
 
   sortMiddlewares() {
-    this.middlewares.sort(function(a, b) {
+    this.middlewares.sort(function (a, b) {
       if (BigInt(a.priority) < BigInt(b.priority)) {
         return -1;
       }
@@ -72,10 +97,12 @@ export class ForwardPoint {
       return 0;
     });
 
-    this.middlewares.map((rule, index) => {
+    this.middlewares.map((middleware, index) => {
       if (index < this.middlewares.length - 1) {
         // @ts-ignore
-        rule.rule.context.nextRule = this.middlewares[index + 1].rule;
+        middleware.middleware.context.next = this.middlewares[
+          index + 1
+        ].middleware;
       }
     });
   }
@@ -85,8 +112,8 @@ export class ForwardPoint {
       socket.destroy();
     }
 
-    this.middlewares.map(rule => {
-      rule.rule.context.emit('destroy');
+    this.middlewares.map((middleware) => {
+      middleware.middleware.destroy();
     });
   }
 }

@@ -1,32 +1,38 @@
-import { debug as debugRoot } from './utils';
-import path from 'path';
-import { createNpmImportAsync } from './runtime-install';
-import { EventEmitter } from 'events';
-import { Agent as HttpAgent, IncomingMessage, AgentOptions } from 'http';
-import { pipeline } from 'stream';
+import { Agent as HttpAgent, AgentOptions } from 'http';
 import net from 'net';
-import vm from 'vm';
 import { RemoteInfo } from 'dgram';
+import { EventEmitter } from 'events';
+import path from 'path';
+import vm from 'vm';
+import { debug as debugRoot } from './utils';
+import { createNpmImportAsync } from './runtime-install';
 
 const matcheRequires = require('match-requires');
-const debug = debugRoot.extend('Rule');
 
-import {
-  createSocketPair,
-  createHttpAgent,
-  CreateHttpAgentOptions,
-} from './utils';
-import { Duplex } from 'stream';
+const debug = debugRoot.extend('Middleware');
+
+import { createSocketPair, createSocket } from './Socket';
+import { Duplex, Stream } from 'stream';
 import { MessageStream } from './MessageStream';
+
+export type EntryPoint = {
+  id: string;
+  name: string;
+  type: 'HOSTNAME' | 'EXTERNAL_PORT' | 'DEVICE_PORT';
+};
 
 export type App = {
   id: string;
   name: string;
   type: 'HTTP' | 'TCP' | 'UDP';
-  entryPoint: {
-    id: string;
-    type: 'HOSTNAME' | 'EXTERNAL_PORT' | 'DEVICE_PORT';
-  };
+  entryPoint: EntryPoint;
+};
+
+export type Rule = {
+  id: string;
+  name: string;
+  version: string;
+  ruleScript: string;
 };
 
 export interface UdpProxySocket {
@@ -38,52 +44,43 @@ export interface UdpProxySocket {
     event: 'message',
     listener: (msg: Buffer, rinfo: RemoteInfo) => void,
   ): this;
-  on(event: 'close', listener: (msg: Buffer, rinfo: RemoteInfo) => void): this;
-  once(
-    event: 'close',
-    listener: (msg: Buffer, rinfo: RemoteInfo) => void,
-  ): this;
+  on(event: 'close', listener: () => void): this;
+  once(event: 'close', listener: () => void): this;
 }
+
 export class UdpProxySocket extends EventEmitter {
-  private messageStream!: MessageStream;
-  socket!: net.Socket;
+  socket: net.Socket;
   rinfo: RemoteInfo;
 
-  constructor(duplex: Duplex, rinfo: RemoteInfo) {
+  private messageStream: MessageStream;
+
+  constructor(options: { duplex: Duplex; rinfo: RemoteInfo }) {
     super();
-    this.rinfo = rinfo;
-    const socket = createSocketPair({ port: 80 }, remoteSocket => {
-      this.socket = remoteSocket;
-      this.socket.setTimeout(30 * 1000);
+    this.rinfo = options.rinfo;
 
-      this.socket.on('timeout', () => {
-        this.socket.destroy();
-      });
+    this.socket = createSocket(options.duplex);
+    this.socket.setTimeout(30 * 1000);
 
-      this.socket.on('error', () => {
-        this.socket.destroy();
-      });
-
-      this.socket.on('close', (...args: any[]) => {
-        this.emit('close', ...args);
-      });
-
-      this.messageStream = new MessageStream(this.socket);
-      this.messageStream.on('error', () => {
-        this.messageStream.destroy();
-      });
-
-      this.messageStream.on('message', (type, payload) => {
-        if (type === 'message') {
-          const data = payload as { msg: string; rinfo: RemoteInfo };
-          const msg = Buffer.from(data.msg);
-          this.emit('message', msg, rinfo);
-        }
-      });
+    this.socket.on('timeout', () => {
+      this.socket.destroy();
     });
 
-    pipeline(duplex, socket);
-    pipeline(socket, duplex);
+    this.socket.on('close', (...args: any[]) => {
+      this.emit('close', ...args);
+    });
+
+    this.messageStream = new MessageStream(this.socket);
+    this.messageStream.on('error', () => {
+      this.messageStream.destroy();
+    });
+
+    this.messageStream.on('message', (type, payload) => {
+      if (type === 'message') {
+        const data = payload as { msg: string; rinfo: RemoteInfo };
+        const msg = Buffer.from(data.msg);
+        this.emit('message', msg, data.rinfo);
+      }
+    });
   }
 
   setTimeout(...args: any[]) {
@@ -117,7 +114,8 @@ export class NextMiddlewareAgent extends HttpAgent {
   }
 
   setRemoteOptions(options: { remoteAddress?: string; remotePort?: string }) {
-    this.__remoteOptions = options;
+    const { remoteAddress, remotePort } = options;
+    this.__remoteOptions = { remoteAddress, remotePort };
     return this;
   }
 
@@ -126,16 +124,16 @@ export class NextMiddlewareAgent extends HttpAgent {
     callback: (err: Error | null, result?: net.Socket) => void,
   ) {
     try {
-      const socket = createSocketPair(
-        { ...options, ...this.__remoteOptions },
-        remoteSocket => {
-          this.ctx.nextMiddleware(remoteSocket);
-        },
-      );
+      let { socket, remoteSocket } = createSocketPair({
+        ...options,
+        ...this.__remoteOptions,
+      });
 
-      // @ts-ignore
-      this.__remoteAddress = undefined;
+      this.ctx.nextMiddleware(remoteSocket);
+
+      this.__remoteOptions = {};
       callback(null, socket);
+      return socket;
     } catch (err) {
       callback(err);
     }
@@ -158,9 +156,9 @@ export interface RuleContext {
 }
 
 export class RuleContext extends EventEmitter {
+  private next!: Middleware;
   options!: (...args: any[]) => any;
   app: App;
-  private nextRule!: Rule;
 
   constructor(options: { app: App }) {
     super();
@@ -171,55 +169,51 @@ export class RuleContext extends EventEmitter {
     this.nextMiddlewareAgent = this.nextMiddlewareAgent.bind(this);
   }
 
-  nextMiddleware(...options: any[]) {
-    this.nextRule.connection(...options);
+  nextMiddleware(socket: net.Socket | UdpProxySocket) {
+    this.next.connection(socket);
   }
 
   nextMiddlewareSocket(options: {
     remoteAddress?: string;
     remotePort?: string;
   }): net.Socket {
-    const socket = createSocketPair({ port: 80, ...options }, remoteSocket => {
-      this.nextMiddleware(remoteSocket);
+    const { remoteAddress, remotePort } = options;
+    const { socket, remoteSocket } = createSocketPair({
+      remoteAddress,
+      remotePort,
     });
-
+    this.nextMiddleware(remoteSocket);
     return socket;
   }
 
   nextMiddlewareAgent(opts?: AgentOptions) {
     return new NextMiddlewareAgent(this, opts);
   }
-
-  createHttpAgent(target: string, options: CreateHttpAgentOptions) {
-    return createHttpAgent(target, options);
-  }
 }
 
-export class Rule {
+export class Middleware {
   id: string;
   name: string;
-  version: string;
-  ruleScript: string;
+  rule: Rule;
+  app: App;
   optionsScript: string;
-  installPath: string;
   context: RuleContext;
+  configDir: string;
 
   constructor(options: {
     id: string;
-    name: string;
-    version: string;
-    ruleScript: string;
-    optionsScript: string;
     app: App;
+    rule: Rule;
+    name: string;
+    optionsScript: string;
     configDir: string;
   }) {
     this.id = options.id;
     this.name = options.name;
-    this.version = options.version;
-    this.ruleScript = options.ruleScript;
+    this.rule = options.rule;
+    this.app = options.app;
     this.optionsScript = options.optionsScript;
-
-    this.installPath = path.join(options.configDir, 'rules', this.id);
+    this.configDir = options.configDir;
 
     this.context = new RuleContext({
       app: options.app,
@@ -227,7 +221,7 @@ export class Rule {
   }
 
   async optionsModule(options: { customRequire: any }) {
-    const filename = `app_${this.context.app.name}/rule_${this.name}/options`;
+    const filename = `app_${this.context.app.name}/middleware_${this.name}/options`;
     const sandbox: any = {};
     const exports: any = {};
 
@@ -249,7 +243,7 @@ export class Rule {
   }
 
   async ruleModule(options: { customRequire: any }) {
-    const filename = `app_${this.context.app.name}/rule_${this.name}`;
+    const filename = `app_${this.context.app.name}/rule_${this.rule.name}`;
     const sandbox: any = {};
     const exports: any = {};
 
@@ -267,7 +261,7 @@ export class Rule {
     };
     sandbox.global = sandbox;
 
-    return this.eval({ sandbox, scriptContent: this.ruleScript });
+    return this.eval({ sandbox, scriptContent: this.rule.ruleScript });
   }
 
   ruleRequire(packagesMap: Map<string, any>) {
@@ -289,15 +283,18 @@ export class Rule {
     return sandbox.module.exports;
   }
 
-  async getPackageMap(script: string) {
+  async getPackageMap(script: string, installPath: string) {
     const packagesMap = new Map<string, any>();
 
     const requires = (matcheRequires(script) as {
       name: string;
-    }[]).map(match => match.name);
+      string: string;
+    }[]).map((match) => match.name);
+
+    debug('requires', requires);
 
     let installPackages: string[] = [];
-    requires.map(packageName => {
+    requires.map((packageName) => {
       if (require('module').builtinModules.includes(packageName)) {
         packagesMap.set(packageName, require(packageName));
       } else {
@@ -305,7 +302,9 @@ export class Rule {
       }
     });
 
-    const npmImportAsync = createNpmImportAsync(this.installPath);
+    debug('installPackages', installPackages);
+
+    const npmImportAsync = createNpmImportAsync(installPath);
     const packages = (await npmImportAsync(installPackages)) as any[];
 
     packages.map((packageContent, index) => {
@@ -316,7 +315,11 @@ export class Rule {
   }
 
   async init() {
-    const rulePackagesMap = await this.getPackageMap(this.ruleScript);
+    const ruleInstallPath = path.join(this.configDir, 'rule', this.rule.id);
+    const rulePackagesMap = await this.getPackageMap(
+      this.rule.ruleScript,
+      ruleInstallPath,
+    );
     const ruleRequire = this.ruleRequire(rulePackagesMap);
 
     const ruleModule = await this.ruleModule({ customRequire: ruleRequire });
@@ -324,7 +327,11 @@ export class Rule {
       throw new Error('rule script does not export function');
     }
 
-    const optionsPackagesMap = await this.getPackageMap(this.optionsScript);
+    const optionsInstallPath = path.join(this.configDir, 'middleware', this.id);
+    const optionsPackagesMap = await this.getPackageMap(
+      this.optionsScript,
+      optionsInstallPath,
+    );
     const optionsRequire = this.ruleRequire(optionsPackagesMap);
 
     const optionModule = await this.optionsModule({
@@ -339,26 +346,11 @@ export class Rule {
     await ruleModule(this.context);
   }
 
-  connection(...options: any[]) {
-    const duplex = options[0];
-    if (this.context.app.type === 'HTTP' || this.context.app.type === 'TCP') {
-      const handshakeData = options[1];
-      const { remoteAddress, remotePort } = handshakeData;
-
-      const socket = createSocketPair(
-        { port: 80, remoteAddress, remotePort },
-        remoteSocket => {
-          this.context.emit('connection', remoteSocket);
-        },
-      );
-
-      pipeline(duplex, socket);
-      pipeline(socket, duplex);
-    } else if (this.context.app.type === 'UDP') {
-      const handshakeData = options[1];
-      const { rinfo } = handshakeData;
-      const udpProxySocket = new UdpProxySocket(duplex, rinfo);
-      this.context.emit('udpProxySocket', udpProxySocket);
+  connection(duplex: net.Socket | UdpProxySocket) {
+    if (this.app.type === 'HTTP' || this.app.type === 'TCP') {
+      this.context.emit('connection', duplex);
+    } else if (this.app.type === 'UDP') {
+      this.context.emit('udpProxySocket', duplex);
     }
   }
 

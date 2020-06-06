@@ -3,6 +3,7 @@ declare module 'bpmux' {
 
   export type BPMuxOptions = {
     peer_multiplex_options?: {
+      allowHalfOpen?: boolean;
       max_write_size?: number;
       check_read_overflow?: boolean;
     };
@@ -15,6 +16,7 @@ declare module 'bpmux' {
   };
 
   export type BPMuxMultiplexOptions = {
+    allowHalfOpen?: boolean;
     handshake_data?: Buffer;
     max_write_size?: number;
     check_read_overflow?: boolean;

@@ -1,17 +1,8 @@
-import { debug as debugRoot } from './utils';
-import path from 'path';
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
-import { GraphQLClient } from 'graphql-request';
-import { getSdk } from 'api/sdk';
-import { LotunSocket, LotunMessageType, LotunReasonError } from './LotunSocket';
 import { LotunApps } from './LotunApps';
-import { getDefaultConfigPath } from './utils';
-
-const debug = debugRoot.extend('LotunClient');
-
-const WS_URL = 'wss://device.lotun.io';
-const API_URL = 'https://api.lotun.io/graphql';
+import { LotunConfig } from './LotunConfig';
+import { LotunSocket, LotunMessageType, LotunReasonError } from './LotunSocket';
 
 export interface LotunClient {
   on(event: 'connect', listener: () => void): this;
@@ -30,50 +21,34 @@ export class LotunClient extends EventEmitter {
     deviceToken: string;
     wsUrl: string;
     reconnect: boolean;
-    apiUrl: string;
   };
-  private api!: ReturnType<typeof getSdk>;
-  private lastDisconnectReason!: LotunReasonError;
 
-  constructor(options: {
-    configPath?: string;
-    wsUrl?: string;
-    apiUrl?: string;
-  }) {
+  private lastDisconnectReason: LotunReasonError | undefined;
+
+  constructor(config: LotunConfig) {
     super();
 
-    if (!options.configPath) {
-      options.configPath = getDefaultConfigPath();
+    if (!config.data) {
+      throw new Error(
+        'LotunConfig property data is missing. Please call setConfig, readConfig or saveConfig function on LotunConfig class.',
+      );
     }
 
-    const configDir = path.dirname(options.configPath);
+    const { DEVICE_TUNNEL_URL } = config.constants;
 
     this.options = {
-      configDir,
-      wsUrl: options.wsUrl ?? WS_URL,
-      apiUrl: options.apiUrl ?? API_URL,
+      configDir: config.configDir,
+      wsUrl: DEVICE_TUNNEL_URL,
       reconnect: true,
-      deviceToken: '',
+      deviceToken: config.data.deviceToken || '',
     };
 
-    const client = new GraphQLClient(`${this.options.apiUrl}`);
-    this.api = getSdk(client);
+    this.on('connect', () => {
+      this.lastDisconnectReason = undefined;
+    });
   }
 
-  async generateDeviceToken() {
-    const res = await this.api.generateDeviceToken();
-    return res.generateDeviceToken.token;
-  }
-
-  connect(options: { deviceToken: string; reconnect?: boolean }) {
-    debug('connect');
-    if (typeof options.reconnect !== 'boolean') {
-      options.reconnect = true;
-    }
-
-    this.options.reconnect = options.reconnect;
-    this.options.deviceToken = options.deviceToken;
-
+  connect() {
     this.ws = new WebSocket(this.options.wsUrl, {
       handshakeTimeout: 10000,
       headers: {
@@ -82,8 +57,6 @@ export class LotunClient extends EventEmitter {
     });
 
     this.ws.on('open', () => {
-      debug('open');
-
       this.lotunSocket = new LotunSocket(this.ws);
       this.apps = new LotunApps({
         lotunSocket: this.lotunSocket,
@@ -91,9 +64,9 @@ export class LotunClient extends EventEmitter {
       });
 
       this.lotunSocket.on('message', (type, payload) => {
-        debug('lotunSocket.message', type, payload);
         if (type === 'connect') {
           const data = payload as LotunMessageType[typeof type];
+
           this.emit('connect');
         }
 
@@ -104,7 +77,6 @@ export class LotunClient extends EventEmitter {
       });
 
       this.lotunSocket.on('duplex', (duplex, handshakeData) => {
-        debug('lotunSocket.duplex', handshakeData);
         this.apps.duplex(duplex, handshakeData);
       });
 
@@ -113,17 +85,15 @@ export class LotunClient extends EventEmitter {
       });
     });
 
-    this.ws.on('error', err => {
-      debug('ws.error', err);
+    this.ws.on('error', (err) => {
+      // debug('ws.error', err);
     });
 
     this.ws.on('unexpected-response', (req, res) => {
-      debug('ws.unexpected-response');
       this.ws.terminate();
     });
 
     this.ws.on('close', (code, reason) => {
-      debug('ws.close', code, reason);
       if (code === 4000) {
         const errorReason = reason as LotunReasonError;
         this.onDisconnect(errorReason);
@@ -153,16 +123,12 @@ export class LotunClient extends EventEmitter {
     await this.destroy();
     if (this.options.reconnect) {
       setTimeout(async () => {
-        this.connect({
-          deviceToken: this.options.deviceToken,
-          reconnect: this.options.reconnect,
-        });
+        this.connect();
       }, 5000);
     }
   }
 
   async destroy() {
-    debug('destroy');
     if (this.lotunSocket) {
       await this.lotunSocket.destroy();
     } else {

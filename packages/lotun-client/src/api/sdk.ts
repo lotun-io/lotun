@@ -9,6 +9,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** ID Global */
   IDGlobal: any;
 };
 
@@ -20,13 +21,60 @@ export type Account = Node & {
   createdAt: Scalars['String'];
 };
 
+export enum AppTypeEnum {
+  Http = 'HTTP',
+  Tcp = 'TCP',
+  Udp = 'UDP'
+}
+
+export type ForwardPoint = {
+  __typename?: 'ForwardPoint';
+  device?: Maybe<Device>;
+  middlewares: MiddlewaresConnection;
+};
+
 export type App = {
   id: Scalars['ID'];
   type: AppTypeEnum;
   name: Scalars['String'];
+  entryPoint?: Maybe<EntryPoint>;
+  forwardPoint?: Maybe<ForwardPoint>;
   updatedAt: Scalars['String'];
   createdAt: Scalars['String'];
+};
+
+export type HttpApp = App & Node & {
+  __typename?: 'HttpApp';
+  id: Scalars['ID'];
+  type: AppTypeEnum;
+  name: Scalars['String'];
   entryPoint?: Maybe<EntryPoint>;
+  forwardPoint?: Maybe<ForwardPoint>;
+  updatedAt: Scalars['String'];
+  createdAt: Scalars['String'];
+  entryPath: Scalars['String'];
+};
+
+export type TcpApp = App & Node & {
+  __typename?: 'TcpApp';
+  id: Scalars['ID'];
+  type: AppTypeEnum;
+  name: Scalars['String'];
+  entryPoint?: Maybe<EntryPoint>;
+  forwardPoint?: Maybe<ForwardPoint>;
+  updatedAt: Scalars['String'];
+  createdAt: Scalars['String'];
+};
+
+export type UdpApp = App & Node & {
+  __typename?: 'UdpApp';
+  id: Scalars['ID'];
+  type: AppTypeEnum;
+  name: Scalars['String'];
+  entryPoint?: Maybe<EntryPoint>;
+  forwardPoint?: Maybe<ForwardPoint>;
+  updatedAt: Scalars['String'];
+  createdAt: Scalars['String'];
 };
 
 export type AppsConnection = {
@@ -41,23 +89,13 @@ export type AppsEdge = {
   cursor?: Maybe<Scalars['String']>;
 };
 
-export type AppsError = {
-  __typename?: 'AppsError';
-  first?: Maybe<AppsErrorFirst>;
-  last?: Maybe<AppsErrorLast>;
-  Connection?: Maybe<DefaultConstraint>;
-};
+export enum AppsOrderBySortEnum {
+  CreatedAt = 'CREATED_AT'
+}
 
-export type AppsErrorFirst = {
-  __typename?: 'AppsErrorFirst';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
-};
-
-export type AppsErrorLast = {
-  __typename?: 'AppsErrorLast';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
+export type AppsOrderByInput = {
+  sort: AppsOrderBySortEnum;
+  direction: OrderByDirectionEnum;
 };
 
 export type AppsFilterInput = {
@@ -65,288 +103,358 @@ export type AppsFilterInput = {
   type?: Maybe<AppTypeEnum>;
 };
 
-export type AppsOrderByInput = {
-  sort: AppsOrderBySortEnum;
-  direction: OrderByDirectionEnum;
-};
-
-export enum AppsOrderBySortEnum {
-  CreatedAt = 'CREATED_AT',
-}
-
-export enum AppTypeEnum {
-  Http = 'HTTP',
-  Tcp = 'TCP',
-  Udp = 'UDP',
-}
-
-export type AuthConfig = {
-  __typename?: 'AuthConfig';
-  authorizeUrl: Scalars['String'];
-  responseType: Scalars['String'];
-  audience: Scalars['String'];
-  scope: Scalars['String'];
-  clientId: Scalars['String'];
-  redirectUri: Scalars['String'];
-};
-
-export type ConnectionPageInfo = {
-  __typename?: 'ConnectionPageInfo';
-  hasNextPage: Scalars['Boolean'];
-  hasPreviousPage: Scalars['Boolean'];
-  startCursor?: Maybe<Scalars['String']>;
-  endCursor?: Maybe<Scalars['String']>;
-  edgesCount: Scalars['Int'];
-  edgesTotalCount: Scalars['Int'];
-  pageNumber?: Maybe<Scalars['Int']>;
-  pagesCount?: Maybe<Scalars['Int']>;
-};
-
-export enum ContinentEnum {
-  Europe = 'EUROPE',
-}
-
-export type CreateDeviceInput = {
-  name?: Maybe<Scalars['String']>;
-  token?: Maybe<Scalars['String']>;
-};
-
-export type CreateDevicePort = {
-  name?: Maybe<Scalars['String']>;
-  port: Scalars['String'];
-  deviceId: Scalars['IDGlobal'];
-};
-
-export type CreateDevicePortError = {
-  __typename?: 'CreateDevicePortError';
-  input?: Maybe<CreateDevicePortErrorInput>;
-};
-
-export type CreateDevicePortErrorInput = {
-  __typename?: 'CreateDevicePortErrorInput';
-  deviceId?: Maybe<CreateDevicePortErrorInputDeviceId>;
-};
-
-export type CreateDevicePortErrorInputDeviceId = {
-  __typename?: 'CreateDevicePortErrorInputDeviceId';
-  NotFound?: Maybe<DefaultConstraint>;
-};
-
-export type CreateDomainInput = {
-  name: Scalars['String'];
-};
-
-export type CreateExternalPort = {
-  name?: Maybe<Scalars['String']>;
-  externalIpId?: Maybe<Scalars['IDGlobal']>;
-};
-
-export type CreateExternalPortError = {
-  __typename?: 'CreateExternalPortError';
-  input?: Maybe<CreateExternalPortErrorInput>;
-};
-
-export type CreateExternalPortErrorInput = {
-  __typename?: 'CreateExternalPortErrorInput';
-  externalIpId?: Maybe<CreateExternalPortErrorInputExternalIpId>;
-};
-
-export type CreateExternalPortErrorInputExternalIpId = {
-  __typename?: 'CreateExternalPortErrorInputExternalIpId';
-  NotFound?: Maybe<DefaultConstraint>;
-};
-
-export type CreateHostname = {
-  name?: Maybe<Scalars['String']>;
-  subdomain?: Maybe<Scalars['String']>;
-  domainId: Scalars['IDGlobal'];
-};
-
-export type CreateHostnameError = {
-  __typename?: 'CreateHostnameError';
-  input?: Maybe<CreateHostnameErrorInput>;
-};
-
-export type CreateHostnameErrorInput = {
-  __typename?: 'CreateHostnameErrorInput';
-  subdomain?: Maybe<CreateHostnameErrorInputSubdomain>;
-  domainId?: Maybe<CreateHostnameErrorInputDomainId>;
-};
-
-export type CreateHostnameErrorInputDomainId = {
-  __typename?: 'CreateHostnameErrorInputDomainId';
-  NotFound?: Maybe<DefaultConstraint>;
-};
-
-export type CreateHostnameErrorInputSubdomain = {
-  __typename?: 'CreateHostnameErrorInputSubdomain';
-  Matches?: Maybe<DefaultConstraint>;
-};
-
 export type CreateHttpApp = {
   name?: Maybe<Scalars['String']>;
   entryPath?: Maybe<Scalars['String']>;
   entryPointId: Scalars['IDGlobal'];
-  forwardPoint: HttpForwardPointInput;
-};
-
-export type CreateHttpAppError = {
-  __typename?: 'CreateHttpAppError';
-  input?: Maybe<CreateHttpAppErrorInput>;
-};
-
-export type CreateHttpAppErrorInput = {
-  __typename?: 'CreateHttpAppErrorInput';
-  forwardPoint?: Maybe<CreateHttpAppErrorInputForwardPoint>;
-  entryPointId?: Maybe<CreateHttpAppErrorInputEntryPointId>;
-};
-
-export type CreateHttpAppErrorInputEntryPointId = {
-  __typename?: 'CreateHttpAppErrorInputEntryPointId';
-  NotFound?: Maybe<DefaultConstraint>;
-};
-
-export type CreateHttpAppErrorInputForwardPoint = {
-  __typename?: 'CreateHttpAppErrorInputForwardPoint';
-  deviceId?: Maybe<CreateHttpAppErrorInputForwardPointDeviceId>;
-};
-
-export type CreateHttpAppErrorInputForwardPointDeviceId = {
-  __typename?: 'CreateHttpAppErrorInputForwardPointDeviceId';
-  NotFound?: Maybe<DefaultConstraint>;
+  forwardPoint: ForwardPointInput;
 };
 
 export type CreateTcpApp = {
   name?: Maybe<Scalars['String']>;
   entryPointId: Scalars['IDGlobal'];
-  forwardPoint: TcpForwardPointInput;
-};
-
-export type CreateTcpAppError = {
-  __typename?: 'CreateTcpAppError';
-  input?: Maybe<CreateTcpAppErrorInput>;
-};
-
-export type CreateTcpAppErrorInput = {
-  __typename?: 'CreateTcpAppErrorInput';
-  forwardPoint?: Maybe<CreateTcpAppErrorInputForwardPoint>;
-  entryPointId?: Maybe<CreateTcpAppErrorInputEntryPointId>;
-};
-
-export type CreateTcpAppErrorInputEntryPointId = {
-  __typename?: 'CreateTcpAppErrorInputEntryPointId';
-  NotFound?: Maybe<DefaultConstraint>;
-};
-
-export type CreateTcpAppErrorInputForwardPoint = {
-  __typename?: 'CreateTcpAppErrorInputForwardPoint';
-  deviceId?: Maybe<CreateTcpAppErrorInputForwardPointDeviceId>;
-};
-
-export type CreateTcpAppErrorInputForwardPointDeviceId = {
-  __typename?: 'CreateTcpAppErrorInputForwardPointDeviceId';
-  NotFound?: Maybe<DefaultConstraint>;
+  forwardPoint: ForwardPointInput;
 };
 
 export type CreateUdpApp = {
   name?: Maybe<Scalars['String']>;
   entryPointId: Scalars['IDGlobal'];
-  forwardPoint: UdpForwardPointInput;
+  forwardPoint: ForwardPointInput;
 };
 
-export type CreateUdpAppError = {
-  __typename?: 'CreateUdpAppError';
-  input?: Maybe<CreateUdpAppErrorInput>;
+export type ForwardPointInput = {
+  deviceId: Scalars['IDGlobal'];
+  host?: Maybe<Scalars['String']>;
+  port?: Maybe<Scalars['String']>;
 };
 
-export type CreateUdpAppErrorInput = {
-  __typename?: 'CreateUdpAppErrorInput';
-  forwardPoint?: Maybe<CreateUdpAppErrorInputForwardPoint>;
-  entryPointId?: Maybe<CreateUdpAppErrorInputEntryPointId>;
+export type UpdateAppInput = {
+  name?: Maybe<Scalars['String']>;
 };
 
-export type CreateUdpAppErrorInputEntryPointId = {
-  __typename?: 'CreateUdpAppErrorInputEntryPointId';
-  NotFound?: Maybe<DefaultConstraint>;
+export type Query = {
+  __typename?: 'Query';
+  apps: AppsConnection;
+  deviceTunnels: DeviceTunnelsConnection;
+  devices: DevicesConnection;
+  generateDeviceToken: DeviceToken;
+  domains: DomainsConnection;
+  entryPoints: EntryPointsConnection;
+  externalIps: ExternalIpsConnection;
+  middlewares: MiddlewaresConnection;
+  node?: Maybe<Node>;
+  search: Array<Node>;
+  rules: RulesConnection;
+  me: User;
 };
 
-export type CreateUdpAppErrorInputForwardPoint = {
-  __typename?: 'CreateUdpAppErrorInputForwardPoint';
-  deviceId?: Maybe<CreateUdpAppErrorInputForwardPointDeviceId>;
+
+export type QueryAppsArgs = {
+  first?: Maybe<Scalars['Int']>;
+  last?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  before?: Maybe<Scalars['String']>;
+  orderBy?: Maybe<Array<AppsOrderByInput>>;
+  filter?: Maybe<AppsFilterInput>;
 };
 
-export type CreateUdpAppErrorInputForwardPointDeviceId = {
-  __typename?: 'CreateUdpAppErrorInputForwardPointDeviceId';
-  NotFound?: Maybe<DefaultConstraint>;
+
+export type QueryDeviceTunnelsArgs = {
+  first?: Maybe<Scalars['Int']>;
+  last?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  before?: Maybe<Scalars['String']>;
+  orderBy?: Maybe<Array<DeviceTunnelsOrderByInput>>;
 };
 
-export type DefaultConstraint = {
-  __typename?: 'DefaultConstraint';
-  message: Scalars['String'];
+
+export type QueryDevicesArgs = {
+  first?: Maybe<Scalars['Int']>;
+  last?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  before?: Maybe<Scalars['String']>;
+  orderBy?: Maybe<Array<DevicesOrderByInput>>;
 };
 
-export type DeleteAppError = {
-  __typename?: 'DeleteAppError';
-  id?: Maybe<DeleteAppErrorId>;
+
+export type QueryDomainsArgs = {
+  first?: Maybe<Scalars['Int']>;
+  last?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  before?: Maybe<Scalars['String']>;
+  orderBy?: Maybe<Array<DomainsOrderByInput>>;
+  filter?: Maybe<DomainsFilterInput>;
 };
 
-export type DeleteAppErrorId = {
-  __typename?: 'DeleteAppErrorId';
-  NotFound?: Maybe<DefaultConstraint>;
+
+export type QueryEntryPointsArgs = {
+  first?: Maybe<Scalars['Int']>;
+  last?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  before?: Maybe<Scalars['String']>;
+  orderBy?: Maybe<Array<EntryPointsOrderByInput>>;
+  filter?: Maybe<EntryPointsFilterInput>;
 };
 
-export type DeleteDeviceError = {
-  __typename?: 'DeleteDeviceError';
-  id?: Maybe<DeleteDeviceErrorId>;
+
+export type QueryExternalIpsArgs = {
+  first?: Maybe<Scalars['Int']>;
+  last?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  before?: Maybe<Scalars['String']>;
+  orderBy?: Maybe<Array<ExternalIpsOrderByInput>>;
 };
 
-export type DeleteDeviceErrorId = {
-  __typename?: 'DeleteDeviceErrorId';
-  NotFound?: Maybe<DefaultConstraint>;
+
+export type QueryMiddlewaresArgs = {
+  first?: Maybe<Scalars['Int']>;
+  last?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  before?: Maybe<Scalars['String']>;
+  orderBy?: Maybe<Array<MiddlewaresOrderByInput>>;
+  filter?: Maybe<MiddlewaresFilterInput>;
 };
 
-export type DeleteDomainError = {
-  __typename?: 'DeleteDomainError';
-  id?: Maybe<DeleteDomainErrorId>;
+
+export type QueryNodeArgs = {
+  id: Scalars['ID'];
 };
 
-export type DeleteDomainErrorId = {
-  __typename?: 'DeleteDomainErrorId';
-  NotFound?: Maybe<DefaultConstraint>;
-  Forbidden?: Maybe<DefaultConstraint>;
+
+export type QuerySearchArgs = {
+  query: Scalars['String'];
+  typename?: Maybe<TypenameEnum>;
 };
 
-export type DeleteEntryPointError = {
-  __typename?: 'DeleteEntryPointError';
-  id?: Maybe<DeleteEntryPointErrorId>;
+
+export type QueryRulesArgs = {
+  first?: Maybe<Scalars['Int']>;
+  last?: Maybe<Scalars['Int']>;
+  after?: Maybe<Scalars['String']>;
+  before?: Maybe<Scalars['String']>;
+  orderBy?: Maybe<Array<RulesOrderByInput>>;
+  filter?: Maybe<RulesFilterInput>;
 };
 
-export type DeleteEntryPointErrorId = {
-  __typename?: 'DeleteEntryPointErrorId';
-  NotFound?: Maybe<DefaultConstraint>;
+export type Mutation = {
+  __typename?: 'Mutation';
+  createHttpApp: HttpApp;
+  createTcpApp: TcpApp;
+  createUdpApp: UdpApp;
+  updateApp: App;
+  deleteApp: App;
+  createDevice: Device;
+  updateDevice: Device;
+  deleteDevice: Device;
+  createDomain: Domain;
+  verifyDomain: Domain;
+  deleteDomain: Domain;
+  createHostname: Hostname;
+  createExternalPort: ExternalPort;
+  createDevicePort: DevicePort;
+  updateEntryPoint: EntryPoint;
+  deleteEntryPoint: EntryPoint;
+  createMiddleware: Middleware;
+  updateMiddleware: Middleware;
+  updateMiddlewaresOrder: MiddlewaresConnection;
+  deleteMiddleware: Middleware;
+  createRule: Rule;
+  deleteRule: Rule;
+  updateUser: User;
 };
+
+
+export type MutationCreateHttpAppArgs = {
+  input: CreateHttpApp;
+};
+
+
+export type MutationCreateTcpAppArgs = {
+  input: CreateTcpApp;
+};
+
+
+export type MutationCreateUdpAppArgs = {
+  input: CreateUdpApp;
+};
+
+
+export type MutationUpdateAppArgs = {
+  id: Scalars['IDGlobal'];
+  input: UpdateAppInput;
+};
+
+
+export type MutationDeleteAppArgs = {
+  id: Scalars['IDGlobal'];
+};
+
+
+export type MutationCreateDeviceArgs = {
+  input?: Maybe<CreateDeviceInput>;
+};
+
+
+export type MutationUpdateDeviceArgs = {
+  id: Scalars['IDGlobal'];
+  input: UpdateDeviceInput;
+};
+
+
+export type MutationDeleteDeviceArgs = {
+  id: Scalars['IDGlobal'];
+};
+
+
+export type MutationCreateDomainArgs = {
+  input: CreateDomainInput;
+};
+
+
+export type MutationVerifyDomainArgs = {
+  id: Scalars['IDGlobal'];
+};
+
+
+export type MutationDeleteDomainArgs = {
+  id: Scalars['IDGlobal'];
+};
+
+
+export type MutationCreateHostnameArgs = {
+  input: CreateHostname;
+};
+
+
+export type MutationCreateExternalPortArgs = {
+  input?: Maybe<CreateExternalPort>;
+};
+
+
+export type MutationCreateDevicePortArgs = {
+  input: CreateDevicePort;
+};
+
+
+export type MutationUpdateEntryPointArgs = {
+  id: Scalars['IDGlobal'];
+  input: UpdateEntryPointInput;
+};
+
+
+export type MutationDeleteEntryPointArgs = {
+  id: Scalars['IDGlobal'];
+};
+
+
+export type MutationCreateMiddlewareArgs = {
+  input: CreateMiddlewareInput;
+};
+
+
+export type MutationUpdateMiddlewareArgs = {
+  id: Scalars['IDGlobal'];
+  input: UpdateMiddlewareInput;
+};
+
+
+export type MutationUpdateMiddlewaresOrderArgs = {
+  input: UpdateMiddlewaresOrderInput;
+};
+
+
+export type MutationDeleteMiddlewareArgs = {
+  id: Scalars['IDGlobal'];
+};
+
+
+export type MutationCreateRuleArgs = {
+  input: CreateRuleInput;
+};
+
+
+export type MutationDeleteRuleArgs = {
+  id: Scalars['IDGlobal'];
+};
+
+
+export type MutationUpdateUserArgs = {
+  id: Scalars['IDGlobal'];
+  input: UpdateUserInput;
+};
+
+export type DeviceTunnel = Node & {
+  __typename?: 'DeviceTunnel';
+  id: Scalars['ID'];
+  clientVersion: Scalars['String'];
+  ip: Scalars['String'];
+  os?: Maybe<DeviceTunnelOs>;
+  geo?: Maybe<DeviceTunnelGeo>;
+  continent: ContinentEnum;
+  region: RegionEnum;
+  zone: ZoneEnum;
+  updatedAt: Scalars['String'];
+  createdAt: Scalars['String'];
+};
+
+export type DeviceTunnelOs = {
+  __typename?: 'DeviceTunnelOs';
+  distro?: Maybe<Scalars['String']>;
+  release?: Maybe<Scalars['String']>;
+  codename?: Maybe<Scalars['String']>;
+  kernel?: Maybe<Scalars['String']>;
+  arch?: Maybe<Scalars['String']>;
+  hostname?: Maybe<Scalars['String']>;
+  codepage?: Maybe<Scalars['String']>;
+  logofile?: Maybe<Scalars['String']>;
+  build?: Maybe<Scalars['String']>;
+};
+
+export type DeviceTunnelGeo = {
+  __typename?: 'DeviceTunnelGeo';
+  country?: Maybe<Scalars['String']>;
+  region?: Maybe<Scalars['String']>;
+  city?: Maybe<Scalars['String']>;
+  latitude?: Maybe<Scalars['String']>;
+  longitude?: Maybe<Scalars['String']>;
+};
+
+export type DeviceTunnelsConnection = {
+  __typename?: 'DeviceTunnelsConnection';
+  edges: Array<DeviceTunnelsEdge>;
+  pageInfo: ConnectionPageInfo;
+};
+
+export type DeviceTunnelsEdge = {
+  __typename?: 'DeviceTunnelsEdge';
+  node: DeviceTunnel;
+  cursor?: Maybe<Scalars['String']>;
+};
+
+export enum DeviceTunnelsOrderBySortEnum {
+  CreatedAt = 'CREATED_AT'
+}
+
+export type DeviceTunnelsOrderByInput = {
+  sort: DeviceTunnelsOrderBySortEnum;
+  direction: OrderByDirectionEnum;
+};
+
+export enum DeviceStatusEnum {
+  Online = 'ONLINE',
+  Offline = 'OFFLINE'
+}
 
 export type Device = Node & {
   __typename?: 'Device';
   id: Scalars['ID'];
   name: Scalars['String'];
   token: Scalars['String'];
+  status: DeviceStatusEnum;
+  lastDeviceTunnel?: Maybe<DeviceTunnel>;
   updatedAt: Scalars['String'];
   createdAt: Scalars['String'];
 };
-
-export type DevicePort = EntryPoint &
-  Node & {
-    __typename?: 'DevicePort';
-    id: Scalars['ID'];
-    type: EntryPointTypeEnum;
-    expireAt?: Maybe<Scalars['String']>;
-    updatedAt: Scalars['String'];
-    createdAt: Scalars['String'];
-    name: Scalars['String'];
-    port: Scalars['String'];
-    device?: Maybe<Device>;
-  };
 
 export type DevicesConnection = {
   __typename?: 'DevicesConnection';
@@ -360,75 +468,33 @@ export type DevicesEdge = {
   cursor?: Maybe<Scalars['String']>;
 };
 
-export type DevicesError = {
-  __typename?: 'DevicesError';
-  first?: Maybe<DevicesErrorFirst>;
-  last?: Maybe<DevicesErrorLast>;
-  Connection?: Maybe<DefaultConstraint>;
-};
-
-export type DevicesErrorFirst = {
-  __typename?: 'DevicesErrorFirst';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
-};
-
-export type DevicesErrorLast = {
-  __typename?: 'DevicesErrorLast';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
-};
+export enum DevicesOrderBySortEnum {
+  CreatedAt = 'CREATED_AT'
+}
 
 export type DevicesOrderByInput = {
   sort: DevicesOrderBySortEnum;
   direction: OrderByDirectionEnum;
 };
 
-export enum DevicesOrderBySortEnum {
-  CreatedAt = 'CREATED_AT',
-}
-
 export type DeviceToken = {
   __typename?: 'DeviceToken';
   token: Scalars['String'];
 };
 
-export type DeviceTunnel = Node & {
-  __typename?: 'DeviceTunnel';
-  id: Scalars['ID'];
-  version: Scalars['String'];
-  ip: Scalars['String'];
-  os: DeviceTunnelOs;
-  geo: DeviceTunnelGeo;
-  continent: ContinentEnum;
-  region: RegionEnum;
-  zone: ZoneEnum;
-  updatedAt: Scalars['String'];
-  createdAt: Scalars['String'];
+export type CreateDeviceInput = {
+  name?: Maybe<Scalars['String']>;
+  token?: Maybe<Scalars['String']>;
 };
 
-export type DeviceTunnelGeo = {
-  __typename?: 'DeviceTunnelGeo';
-  country?: Maybe<Scalars['String']>;
-  region?: Maybe<Scalars['String']>;
-  city?: Maybe<Scalars['String']>;
-  latitude?: Maybe<Scalars['String']>;
-  longitude?: Maybe<Scalars['String']>;
+export type UpdateDeviceInput = {
+  name?: Maybe<Scalars['String']>;
 };
 
-export type DeviceTunnelOs = {
-  __typename?: 'DeviceTunnelOs';
-  distro?: Maybe<Scalars['String']>;
-  release?: Maybe<Scalars['String']>;
-  codename?: Maybe<Scalars['String']>;
-  kernel?: Maybe<Scalars['String']>;
-  arch?: Maybe<Scalars['String']>;
-  hostname?: Maybe<Scalars['String']>;
-  codepage?: Maybe<Scalars['String']>;
-  logofile?: Maybe<Scalars['String']>;
-  serial?: Maybe<Scalars['String']>;
-  build?: Maybe<Scalars['String']>;
-};
+export enum DomainTypeEnum {
+  Lotun = 'LOTUN',
+  Account = 'ACCOUNT'
+}
 
 export type Domain = Node & {
   __typename?: 'Domain';
@@ -442,13 +508,10 @@ export type Domain = Node & {
   createdAt: Scalars['String'];
 };
 
-export type DomainCertificate = {
-  __typename?: 'DomainCertificate';
-  commonName?: Maybe<Scalars['String']>;
-  dnsNames?: Maybe<Array<Scalars['String']>>;
-  isReady: Scalars['Boolean'];
-  message?: Maybe<Scalars['String']>;
-};
+export enum DomainDnsRecordType {
+  Cname = 'CNAME',
+  A = 'A'
+}
 
 export type DomainDnsRecord = {
   __typename?: 'DomainDnsRecord';
@@ -458,10 +521,13 @@ export type DomainDnsRecord = {
   isSet: Scalars['Boolean'];
 };
 
-export enum DomainDnsRecordType {
-  Cname = 'CNAME',
-  A = 'A',
-}
+export type DomainCertificate = {
+  __typename?: 'DomainCertificate';
+  commonName?: Maybe<Scalars['String']>;
+  dnsNames?: Maybe<Array<Scalars['String']>>;
+  isReady: Scalars['Boolean'];
+  message?: Maybe<Scalars['String']>;
+};
 
 export type DomainsConnection = {
   __typename?: 'DomainsConnection';
@@ -475,41 +541,32 @@ export type DomainsEdge = {
   cursor?: Maybe<Scalars['String']>;
 };
 
-export type DomainsError = {
-  __typename?: 'DomainsError';
-  first?: Maybe<DomainsErrorFirst>;
-  last?: Maybe<DomainsErrorLast>;
-  Connection?: Maybe<DefaultConstraint>;
-};
-
-export type DomainsErrorFirst = {
-  __typename?: 'DomainsErrorFirst';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
-};
-
-export type DomainsErrorLast = {
-  __typename?: 'DomainsErrorLast';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
-};
-
-export type DomainsFilterInput = {
-  type?: Maybe<DomainTypeEnum>;
-};
+export enum DomainsOrderBySortEnum {
+  CreatedAt = 'CREATED_AT'
+}
 
 export type DomainsOrderByInput = {
   sort: DomainsOrderBySortEnum;
   direction: OrderByDirectionEnum;
 };
 
-export enum DomainsOrderBySortEnum {
-  CreatedAt = 'CREATED_AT',
-}
+export type DomainsFilterInput = {
+  type?: Maybe<DomainTypeEnum>;
+  isVerified?: Maybe<Scalars['Boolean']>;
+};
 
-export enum DomainTypeEnum {
-  Lotun = 'LOTUN',
-  Account = 'ACCOUNT',
+export type CreateDomainInput = {
+  name: Scalars['String'];
+};
+
+export type UpdateDomainInput = {
+  name?: Maybe<Scalars['String']>;
+};
+
+export enum EntryPointTypeEnum {
+  Hostname = 'HOSTNAME',
+  ExternalPort = 'EXTERNAL_PORT',
+  DevicePort = 'DEVICE_PORT'
 }
 
 export type EntryPoint = {
@@ -519,6 +576,42 @@ export type EntryPoint = {
   expireAt?: Maybe<Scalars['String']>;
   updatedAt: Scalars['String'];
   createdAt: Scalars['String'];
+};
+
+export type Hostname = EntryPoint & Node & {
+  __typename?: 'Hostname';
+  id: Scalars['ID'];
+  type: EntryPointTypeEnum;
+  expireAt?: Maybe<Scalars['String']>;
+  updatedAt: Scalars['String'];
+  createdAt: Scalars['String'];
+  name: Scalars['String'];
+  hostname: Scalars['String'];
+  domain?: Maybe<Domain>;
+};
+
+export type ExternalPort = EntryPoint & Node & {
+  __typename?: 'ExternalPort';
+  id: Scalars['ID'];
+  type: EntryPointTypeEnum;
+  expireAt?: Maybe<Scalars['String']>;
+  updatedAt: Scalars['String'];
+  createdAt: Scalars['String'];
+  name: Scalars['String'];
+  port: Scalars['String'];
+  externalIp?: Maybe<ExternalIp>;
+};
+
+export type DevicePort = EntryPoint & Node & {
+  __typename?: 'DevicePort';
+  id: Scalars['ID'];
+  type: EntryPointTypeEnum;
+  expireAt?: Maybe<Scalars['String']>;
+  updatedAt: Scalars['String'];
+  createdAt: Scalars['String'];
+  name: Scalars['String'];
+  port: Scalars['String'];
+  device?: Maybe<Device>;
 };
 
 export type EntryPointsConnection = {
@@ -533,68 +626,45 @@ export type EntryPointsEdge = {
   cursor?: Maybe<Scalars['String']>;
 };
 
-export type EntryPointsError = {
-  __typename?: 'EntryPointsError';
-  first?: Maybe<EntryPointsErrorFirst>;
-  last?: Maybe<EntryPointsErrorLast>;
-  Connection?: Maybe<DefaultConstraint>;
-};
-
-export type EntryPointsErrorFirst = {
-  __typename?: 'EntryPointsErrorFirst';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
-};
-
-export type EntryPointsErrorLast = {
-  __typename?: 'EntryPointsErrorLast';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
-};
-
-export type EntryPointsFilterInput = {
-  type?: Maybe<EntryPointTypeEnum>;
-};
+export enum EntryPointsOrderBySortEnum {
+  CreatedAt = 'CREATED_AT'
+}
 
 export type EntryPointsOrderByInput = {
   sort: EntryPointsOrderBySortEnum;
   direction: OrderByDirectionEnum;
 };
 
-export enum EntryPointsOrderBySortEnum {
-  CreatedAt = 'CREATED_AT',
-}
+export type EntryPointsFilterInput = {
+  type?: Maybe<EntryPointTypeEnum>;
+};
 
-export enum EntryPointTypeEnum {
-  Hostname = 'HOSTNAME',
-  ExternalPort = 'EXTERNAL_PORT',
-  DevicePort = 'DEVICE_PORT',
-}
+export type CreateHostname = {
+  name?: Maybe<Scalars['String']>;
+  subdomain?: Maybe<Scalars['String']>;
+  domainId: Scalars['IDGlobal'];
+};
 
-export type Error =
-  | AppsError
-  | CreateHttpAppError
-  | CreateTcpAppError
-  | CreateUdpAppError
-  | DeleteAppError
-  | DevicesError
-  | UpdateDeviceError
-  | DeleteDeviceError
-  | DomainsError
-  | VerifyDomainError
-  | DeleteDomainError
-  | EntryPointsError
-  | CreateHostnameError
-  | CreateExternalPortError
-  | CreateDevicePortError
-  | DeleteEntryPointError
-  | ExternalIpsError
-  | UpdateUserError;
+export type CreateExternalPort = {
+  name?: Maybe<Scalars['String']>;
+  externalIpId?: Maybe<Scalars['IDGlobal']>;
+};
+
+export type CreateDevicePort = {
+  name?: Maybe<Scalars['String']>;
+  port: Scalars['String'];
+  deviceId: Scalars['IDGlobal'];
+};
+
+export type UpdateEntryPointInput = {
+  name?: Maybe<Scalars['String']>;
+};
 
 export type ExternalIp = Node & {
   __typename?: 'ExternalIp';
   id: Scalars['ID'];
   ipV4: Scalars['String'];
+  hostname: Scalars['String'];
   updatedAt: Scalars['String'];
   createdAt: Scalars['String'];
 };
@@ -611,303 +681,74 @@ export type ExternalIpsEdge = {
   cursor?: Maybe<Scalars['String']>;
 };
 
-export type ExternalIpsError = {
-  __typename?: 'ExternalIpsError';
-  first?: Maybe<ExternalIpsErrorFirst>;
-  last?: Maybe<ExternalIpsErrorLast>;
-  Connection?: Maybe<DefaultConstraint>;
-};
-
-export type ExternalIpsErrorFirst = {
-  __typename?: 'ExternalIpsErrorFirst';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
-};
-
-export type ExternalIpsErrorLast = {
-  __typename?: 'ExternalIpsErrorLast';
-  Max?: Maybe<DefaultConstraint>;
-  Min?: Maybe<DefaultConstraint>;
-};
+export enum ExternalIpsOrderBySortEnum {
+  CreatedAt = 'CREATED_AT'
+}
 
 export type ExternalIpsOrderByInput = {
   sort: ExternalIpsOrderBySortEnum;
   direction: OrderByDirectionEnum;
 };
 
-export enum ExternalIpsOrderBySortEnum {
-  CreatedAt = 'CREATED_AT',
+export type Middleware = Node & {
+  __typename?: 'Middleware';
+  id: Scalars['ID'];
+  rule?: Maybe<Rule>;
+  optionsScript: Scalars['String'];
+  updatedAt: Scalars['String'];
+  createdAt: Scalars['String'];
+};
+
+export type MiddlewaresConnection = {
+  __typename?: 'MiddlewaresConnection';
+  edges: Array<MiddlewaresEdge>;
+  pageInfo: ConnectionPageInfo;
+};
+
+export type MiddlewaresEdge = {
+  __typename?: 'MiddlewaresEdge';
+  node: Middleware;
+  cursor?: Maybe<Scalars['String']>;
+};
+
+export enum MiddlewaresOrderBySortEnum {
+  Priority = 'PRIORITY',
+  CreatedAt = 'CREATED_AT'
 }
 
-export type ExternalPort = EntryPoint &
-  Node & {
-    __typename?: 'ExternalPort';
-    id: Scalars['ID'];
-    type: EntryPointTypeEnum;
-    expireAt?: Maybe<Scalars['String']>;
-    updatedAt: Scalars['String'];
-    createdAt: Scalars['String'];
-    name: Scalars['String'];
-    port: Scalars['String'];
-    externalIp?: Maybe<ExternalIp>;
-  };
-
-export type Hostname = EntryPoint &
-  Node & {
-    __typename?: 'Hostname';
-    id: Scalars['ID'];
-    type: EntryPointTypeEnum;
-    expireAt?: Maybe<Scalars['String']>;
-    updatedAt: Scalars['String'];
-    createdAt: Scalars['String'];
-    name: Scalars['String'];
-    hostname: Scalars['String'];
-    domain?: Maybe<Domain>;
-  };
-
-export type HttpApp = App &
-  Node & {
-    __typename?: 'HttpApp';
-    id: Scalars['ID'];
-    type: AppTypeEnum;
-    name: Scalars['String'];
-    updatedAt: Scalars['String'];
-    createdAt: Scalars['String'];
-    entryPath: Scalars['String'];
-    entryPoint?: Maybe<EntryPoint>;
-    forwardPoint?: Maybe<HttpForwardPoint>;
-    options?: Maybe<HttpAppOptions>;
-  };
-
-export type HttpAppOptions = {
-  __typename?: 'HttpAppOptions';
-  forceHttps: Scalars['Boolean'];
+export type MiddlewaresOrderByInput = {
+  sort: MiddlewaresOrderBySortEnum;
+  direction: OrderByDirectionEnum;
 };
 
-export type HttpAppOptionsInput = {
-  forceHttps?: Maybe<Scalars['Boolean']>;
+export type MiddlewaresFilterInput = {
+  appId?: Maybe<Scalars['IDGlobal']>;
 };
 
-export type HttpForwardPoint = {
-  __typename?: 'HttpForwardPoint';
-  device?: Maybe<Device>;
-  host: Scalars['String'];
-  port: Scalars['String'];
+export type CreateMiddlewareInput = {
+  name?: Maybe<Scalars['String']>;
+  optionsScript: Scalars['String'];
+  appId: Scalars['IDGlobal'];
+  ruleId: Scalars['IDGlobal'];
 };
 
-export type HttpForwardPointInput = {
-  deviceId: Scalars['IDGlobal'];
-  port: Scalars['String'];
-  host?: Maybe<Scalars['String']>;
+export type UpdateMiddlewareInput = {
+  name?: Maybe<Scalars['String']>;
+  optionsScript?: Maybe<Scalars['String']>;
 };
 
-export enum HttpForwardPointTypeEnum {
-  Tcp = 'TCP',
-  Tls = 'TLS',
-}
-
-export type Mutation = {
-  __typename?: 'Mutation';
-  createHttpApp: HttpApp;
-  createTcpApp: TcpApp;
-  createUdpApp: UdpApp;
-  deleteApp: App;
-  createDevice: Device;
-  updateDevice: Device;
-  deleteDevice: Device;
-  createDomain: Domain;
-  verifyDomain: Domain;
-  deleteDomain: Domain;
-  createHostname: Hostname;
-  createExternalPort: ExternalPort;
-  createDevicePort: DevicePort;
-  deleteEntryPoint: EntryPoint;
-  updateUser: User;
-};
-
-export type MutationCreateHttpAppArgs = {
-  input: CreateHttpApp;
-};
-
-export type MutationCreateTcpAppArgs = {
-  input: CreateTcpApp;
-};
-
-export type MutationCreateUdpAppArgs = {
-  input: CreateUdpApp;
-};
-
-export type MutationDeleteAppArgs = {
+export type MiddlewareIdInput = {
   id: Scalars['IDGlobal'];
 };
 
-export type MutationCreateDeviceArgs = {
-  input?: Maybe<CreateDeviceInput>;
+export type UpdateMiddlewaresOrderInput = {
+  appId: Scalars['IDGlobal'];
+  middlewares: Array<MiddlewareIdInput>;
 };
 
-export type MutationUpdateDeviceArgs = {
-  id: Scalars['IDGlobal'];
-  input: UpdateDeviceInput;
-};
-
-export type MutationDeleteDeviceArgs = {
-  id: Scalars['IDGlobal'];
-};
-
-export type MutationCreateDomainArgs = {
-  input: CreateDomainInput;
-};
-
-export type MutationVerifyDomainArgs = {
-  id: Scalars['IDGlobal'];
-};
-
-export type MutationDeleteDomainArgs = {
-  id: Scalars['IDGlobal'];
-};
-
-export type MutationCreateHostnameArgs = {
-  input: CreateHostname;
-};
-
-export type MutationCreateExternalPortArgs = {
-  input?: Maybe<CreateExternalPort>;
-};
-
-export type MutationCreateDevicePortArgs = {
-  input: CreateDevicePort;
-};
-
-export type MutationDeleteEntryPointArgs = {
-  id: Scalars['IDGlobal'];
-};
-
-export type MutationUpdateUserArgs = {
-  id: Scalars['IDGlobal'];
-  input: UpdateUserInput;
-};
 
 export type Node = {
   id: Scalars['ID'];
-};
-
-export enum OrderByDirectionEnum {
-  Asc = 'ASC',
-  Desc = 'DESC',
-}
-
-export type Query = {
-  __typename?: 'Query';
-  apps: AppsConnection;
-  devices: DevicesConnection;
-  generateDeviceToken: DeviceToken;
-  domains: DomainsConnection;
-  entryPoints: EntryPointsConnection;
-  error?: Maybe<Error>;
-  externalIps: ExternalIpsConnection;
-  node?: Maybe<Node>;
-  search: Array<Node>;
-  authConfig: AuthConfig;
-  me: User;
-};
-
-export type QueryAppsArgs = {
-  first?: Maybe<Scalars['Int']>;
-  last?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
-  before?: Maybe<Scalars['String']>;
-  orderBy?: Maybe<Array<AppsOrderByInput>>;
-  filter?: Maybe<AppsFilterInput>;
-};
-
-export type QueryDevicesArgs = {
-  first?: Maybe<Scalars['Int']>;
-  last?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
-  before?: Maybe<Scalars['String']>;
-  orderBy?: Maybe<Array<DevicesOrderByInput>>;
-};
-
-export type QueryDomainsArgs = {
-  first?: Maybe<Scalars['Int']>;
-  last?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
-  before?: Maybe<Scalars['String']>;
-  orderBy?: Maybe<Array<DomainsOrderByInput>>;
-  filter?: Maybe<DomainsFilterInput>;
-};
-
-export type QueryEntryPointsArgs = {
-  first?: Maybe<Scalars['Int']>;
-  last?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
-  before?: Maybe<Scalars['String']>;
-  orderBy?: Maybe<Array<EntryPointsOrderByInput>>;
-  filter?: Maybe<EntryPointsFilterInput>;
-};
-
-export type QueryExternalIpsArgs = {
-  first?: Maybe<Scalars['Int']>;
-  last?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
-  before?: Maybe<Scalars['String']>;
-  orderBy?: Maybe<Array<ExternalIpsOrderByInput>>;
-};
-
-export type QueryNodeArgs = {
-  id: Scalars['ID'];
-};
-
-export type QuerySearchArgs = {
-  query: Scalars['String'];
-  typename?: Maybe<TypenameEnum>;
-};
-
-export type QueryAuthConfigArgs = {
-  redirectUri?: Maybe<Scalars['String']>;
-};
-
-export enum RegionEnum {
-  EuropeWest3 = 'EUROPE_WEST3',
-}
-
-export type TcpApp = App &
-  Node & {
-    __typename?: 'TcpApp';
-    id: Scalars['ID'];
-    type: AppTypeEnum;
-    name: Scalars['String'];
-    updatedAt: Scalars['String'];
-    createdAt: Scalars['String'];
-    entryPoint?: Maybe<EntryPoint>;
-    forwardPoint?: Maybe<TcpForwardPoint>;
-  };
-
-export type TcpForwardPoint = {
-  __typename?: 'TcpForwardPoint';
-  device?: Maybe<Device>;
-  host: Scalars['String'];
-  port: Scalars['String'];
-};
-
-export type TcpForwardPointInput = {
-  deviceId: Scalars['IDGlobal'];
-  port: Scalars['String'];
-  host?: Maybe<Scalars['String']>;
-};
-
-export enum TcpForwardPointTypeEnum {
-  Tcp = 'TCP',
-  Tls = 'TLS',
-}
-
-export type TlsOptions = {
-  __typename?: 'TlsOptions';
-  rejectUnauhtorized: Scalars['Boolean'];
-};
-
-export type TlsOptionsInput = {
-  rejectUnauhtorized?: Maybe<Scalars['Boolean']>;
 };
 
 export enum TypenameEnum {
@@ -920,65 +761,101 @@ export enum TypenameEnum {
   EntryPoint = 'ENTRY_POINT',
   Hostname = 'HOSTNAME',
   ExternalPort = 'EXTERNAL_PORT',
-  DevicePort = 'DEVICE_PORT',
+  DevicePort = 'DEVICE_PORT'
 }
 
-export type UdpApp = App &
-  Node & {
-    __typename?: 'UdpApp';
-    id: Scalars['ID'];
-    type: AppTypeEnum;
-    name: Scalars['String'];
-    updatedAt: Scalars['String'];
-    createdAt: Scalars['String'];
-    entryPoint?: Maybe<EntryPoint>;
-    forwardPoint?: Maybe<UdpForwardPoint>;
-  };
-
-export type UdpForwardPoint = {
-  __typename?: 'UdpForwardPoint';
-  device?: Maybe<Device>;
-  host: Scalars['String'];
-  port: Scalars['String'];
+export type ConnectionPageInfo = {
+  __typename?: 'ConnectionPageInfo';
+  hasNextPage: Scalars['Boolean'];
+  hasPreviousPage: Scalars['Boolean'];
+  startCursor?: Maybe<Scalars['String']>;
+  endCursor?: Maybe<Scalars['String']>;
+  edgesCount: Scalars['Int'];
+  edgesTotalCount: Scalars['Int'];
+  pageNumber?: Maybe<Scalars['Int']>;
+  pagesCount?: Maybe<Scalars['Int']>;
 };
 
-export type UdpForwardPointInput = {
-  deviceId: Scalars['IDGlobal'];
-  port: Scalars['String'];
-  host?: Maybe<Scalars['String']>;
+export enum OrderByDirectionEnum {
+  Asc = 'ASC',
+  Desc = 'DESC'
+}
+
+export enum ContinentEnum {
+  Europe = 'EUROPE'
+}
+
+export enum RegionEnum {
+  EuropeWest3 = 'EUROPE_WEST3'
+}
+
+export enum ZoneEnum {
+  EuropeWest3B = 'EUROPE_WEST3_B'
+}
+
+export enum RuleTypeEnum {
+  Lotun = 'LOTUN',
+  Account = 'ACCOUNT'
+}
+
+export type Rule = Node & {
+  __typename?: 'Rule';
+  id: Scalars['ID'];
+  type: RuleTypeEnum;
+  appTypes: Array<AppTypeEnum>;
+  name: Scalars['String'];
+  description: Scalars['String'];
+  version: Scalars['String'];
+  isLatest: Scalars['Boolean'];
+  ruleScript: Scalars['String'];
+  exampleOptionsScript: Scalars['String'];
+  updatedAt: Scalars['String'];
+  createdAt: Scalars['String'];
 };
 
-export type UpdateDeviceError = {
-  __typename?: 'UpdateDeviceError';
-  id?: Maybe<UpdateDeviceErrorId>;
+export type RulesConnection = {
+  __typename?: 'RulesConnection';
+  edges: Array<RulesEdge>;
+  pageInfo: ConnectionPageInfo;
 };
 
-export type UpdateDeviceErrorId = {
-  __typename?: 'UpdateDeviceErrorId';
-  NotFound?: Maybe<DefaultConstraint>;
+export type RulesEdge = {
+  __typename?: 'RulesEdge';
+  node: Rule;
+  cursor?: Maybe<Scalars['String']>;
 };
 
-export type UpdateDeviceInput = {
+export enum RulesOrderBySortEnum {
+  CreatedAt = 'CREATED_AT'
+}
+
+export type RulesOrderByInput = {
+  sort: RulesOrderBySortEnum;
+  direction: OrderByDirectionEnum;
+};
+
+export type RulesFilterInput = {
+  type?: Maybe<RuleTypeEnum>;
+  appType?: Maybe<AppTypeEnum>;
+  isLatest?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
 };
 
-export type UpdateDomainInput = {
+export type CreateRuleInput = {
+  name: Scalars['String'];
+  version: Scalars['String'];
+  description?: Maybe<Scalars['String']>;
+  appTypes: Array<AppTypeEnum>;
+  ruleScript: Scalars['String'];
+  exampleOptionsScript: Scalars['String'];
+};
+
+export type UpdateRuleInput = {
   name?: Maybe<Scalars['String']>;
-};
-
-export type UpdateUserError = {
-  __typename?: 'UpdateUserError';
-  id?: Maybe<UpdateUserErrorId>;
-};
-
-export type UpdateUserErrorId = {
-  __typename?: 'UpdateUserErrorId';
-  NotFound?: Maybe<DefaultConstraint>;
-};
-
-export type UpdateUserInput = {
-  firstName?: Maybe<Scalars['String']>;
-  lastName?: Maybe<Scalars['String']>;
+  version?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  ruleScript?: Maybe<Scalars['String']>;
+  exampleOptionsScript?: Maybe<Scalars['String']>;
 };
 
 export type User = Node & {
@@ -992,46 +869,40 @@ export type User = Node & {
   createdAt: Scalars['String'];
 };
 
-export type VerifyDomainError = {
-  __typename?: 'VerifyDomainError';
-  id?: Maybe<VerifyDomainErrorId>;
+export type UpdateUserInput = {
+  firstName?: Maybe<Scalars['String']>;
+  lastName?: Maybe<Scalars['String']>;
 };
-
-export type VerifyDomainErrorId = {
-  __typename?: 'VerifyDomainErrorId';
-  NotFound?: Maybe<DefaultConstraint>;
-  Forbidden?: Maybe<DefaultConstraint>;
-};
-
-export enum ZoneEnum {
-  EuropeWest3B = 'EUROPE_WEST3_B',
-}
 
 export type GenerateDeviceTokenQueryVariables = {};
 
-export type GenerateDeviceTokenQuery = { __typename?: 'Query' } & {
-  generateDeviceToken: { __typename?: 'DeviceToken' } & Pick<
-    DeviceToken,
-    'token'
-  >;
-};
+
+export type GenerateDeviceTokenQuery = (
+  { __typename?: 'Query' }
+  & { generateDeviceToken: (
+    { __typename?: 'DeviceToken' }
+    & Pick<DeviceToken, 'token'>
+  ) }
+);
+
 
 export const GenerateDeviceTokenDocument = gql`
-  query generateDeviceToken {
-    generateDeviceToken {
-      token
-    }
+    query generateDeviceToken {
+  generateDeviceToken {
+    token
   }
-`;
-export function getSdk(client: GraphQLClient) {
+}
+    `;
+
+export type SdkFunctionWrapper = <T>(action: () => Promise<T>) => Promise<T>;
+
+
+const defaultWrapper: SdkFunctionWrapper = sdkFunction => sdkFunction();
+export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-    generateDeviceToken(
-      variables?: GenerateDeviceTokenQueryVariables,
-    ): Promise<GenerateDeviceTokenQuery> {
-      return client.request<GenerateDeviceTokenQuery>(
-        print(GenerateDeviceTokenDocument),
-        variables,
-      );
-    },
+    generateDeviceToken(variables?: GenerateDeviceTokenQueryVariables): Promise<GenerateDeviceTokenQuery> {
+      return withWrapper(() => client.request<GenerateDeviceTokenQuery>(print(GenerateDeviceTokenDocument), variables));
+    }
   };
 }
+export type Sdk = ReturnType<typeof getSdk>;
