@@ -1,16 +1,17 @@
 {
   "name": "@lotun/cli",
   "author": "FreshIT, s.r.o.",
-  "version": "1.0.13",
+  "version": "1.1.0",
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
-    "build": "ts-patch install && rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc",
     "build:watch": "tsc -w",
     "test": "npm run test:prettier",
     "test:prettier": "prettier --check \"src/**/*.ts\"",
     "docker:build": "export VERSION=$(npm show . version) && docker build -t lotun/cli:latest -t lotun/cli:$VERSION -f docker/Dockerfile docker",
-    "docker:push": "docker push lotun/cli:1.0.9 && docker push lotun/cli:latest"
+    "docker:push": "docker push lotun/cli:1.1.0 && docker push lotun/cli:latest",
+    "prepare": "ts-patch install"
   },
   "bin": {
     "lotun": "dist/cli.js"
@@ -23,20 +24,21 @@
     "access": "public"
   },
   "dependencies": {
-    "@lotun/client": "^1.0.8",
-    "chalk": "^3.0.0",
-    "commander": "^5.0.0",
-    "latest-version": "^5.1.0",
-    "source-map-support": "^0.5.16"
+    "@lotun/client": "^1.1.1",
+    "chalk": "^4.0.0",
+    "commander": "^5.1.0",
+    "npm": "^6.14.5",
+    "source-map-support": "^0.5.19",
+    "update-notifier": "^4.1.0"
   },
   "devDependencies": {
-    "@types/node": "^12.12.30",
+    "@types/node": "^12.12.44",
     "@types/source-map-support": "^0.5.1",
-    "prettier": "^1.19.1",
-    "ts-node": "^8.7.0",
+    "prettier": "^2.0.5",
+    "ts-node": "^8.10.2",
     "ts-node-dev": "^1.0.0-pre.44",
-    "ts-patch": "^1.0.6",
-    "typescript": "^3.8.3",
+    "ts-patch": "^1.2.4",
+    "typescript": "^3.9.3",
     "typescript-transform-paths": "^1.1.14"
   }
 }

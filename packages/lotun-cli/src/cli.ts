@@ -1,12 +1,11 @@
-#!/usr/bin/env node
-import 'source-map-support/register';
-import os from 'os';
+#!/usr/bin/env node --expose-internals
+import { LotunClient, LotunConfig } from '@lotun/client';
 import chalk from 'chalk';
-import { LotunClient } from '@lotun/client';
 import program from 'commander';
 import latestVersion from 'latest-version';
-import { API_URL, WS_URL, DASHBOARD_URL } from './env';
-import { LotunConfig, log, error } from './utils';
+import os from 'os';
+import 'source-map-support/register';
+import { error, log } from './utils';
 
 const pjson = require('../package.json');
 
@@ -17,7 +16,7 @@ program
     'Full path to lotun config file ex. /home/user/.lotun/config.json',
   );
 
-program.on('--help', function() {
+program.on('--help', function () {
   console.log('');
   console.log('Environment Variables:');
   console.log(
@@ -35,7 +34,7 @@ program.parse(process.argv);
 
 async function main() {
   latestVersion(pjson.name)
-    .then(lotunCliVersion => {
+    .then((lotunCliVersion) => {
       if (lotunCliVersion !== pjson.version) {
         log(
           chalk.yellowBright(`Update available`),
@@ -59,34 +58,24 @@ async function main() {
     configPath = process.env.LOTUN_CONFIG_PATH;
   }
 
-  const lotunConfig = new LotunConfig({ configPath });
-  const config = await lotunConfig.readConfig();
-
-  let deviceToken: string = '';
+  const config = new LotunConfig({ configPath });
+  const { DASHBOARD_URL } = config.constants;
 
   if (process.env.LOTUN_DEVICE_TOKEN) {
-    deviceToken = process.env.LOTUN_DEVICE_TOKEN;
+    config.setConfig({
+      deviceToken: process.env.LOTUN_DEVICE_TOKEN,
+    });
+  } else {
+    await config.readConfig();
   }
 
-  if (config && config.deviceToken && !deviceToken) {
-    deviceToken = config.deviceToken;
+  if (!config.data?.deviceToken) {
+    const deviceToken = await config.generateDeviceToken();
+    await config.saveConfig({ deviceToken });
   }
 
-  const lotun = new LotunClient({
-    configPath,
-    apiUrl: API_URL,
-    wsUrl: WS_URL,
-  });
-
-  if (!deviceToken) {
-    // Generate and store token
-    deviceToken = await lotun.generateDeviceToken();
-    await lotunConfig.saveConfig({ deviceToken });
-  }
-
-  lotun.connect({
-    deviceToken,
-  });
+  const lotun = new LotunClient(config);
+  lotun.connect();
 
   lotun.on('connect', () => {
     log(
@@ -101,7 +90,7 @@ async function main() {
     }
 
     if (reason === 'UNPAIRED_DEVICE_TOKEN') {
-      const encodedToken = encodeURIComponent(deviceToken!);
+      const encodedToken = encodeURIComponent(config.data?.deviceToken!);
       const encodedHostname = encodeURIComponent(os.hostname());
       log(
         chalk.redBright(
@@ -127,7 +116,7 @@ async function main() {
 
 main();
 
-process.on('uncaughtException', err => {
+process.on('uncaughtException', (err) => {
   console.error('uncaughtException', err);
 });
 
