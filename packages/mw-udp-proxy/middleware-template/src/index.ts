@@ -1,10 +1,13 @@
-import { OptionsFunction } from '@lotun/rule-udp-proxy';
+import { MiddlewareFunction } from '@lotun/middleware';
+import { udpProxy } from '@lotun/mw-udp-proxy';
 
-const options: OptionsFunction = async (ctx) => {
-  return {
-    host: 'localhost',
-    port: 3000,
-  };
+const middleware: MiddlewareFunction = async ({ use }) => {
+  await use(
+    udpProxy({
+      host: 'localhost',
+      port: 3000,
+    }),
+  );
 };
 
-export default options;
+export default middleware;

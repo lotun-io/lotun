@@ -1,13 +1,8 @@
 import { MiddlewareFunction } from '@lotun/middleware';
-import { tcpProxy } from '@lotun/mw-force-https';
+import { forceHttps } from '@lotun/mw-force-https';
 
 const middleware: MiddlewareFunction = async ({ use }) => {
-  await use(
-    tcpProxy({
-      host: 'localhost',
-      port: 3000,
-    }),
-  );
+  await use(forceHttps());
 };
 
 export default middleware;
