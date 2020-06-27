@@ -9,7 +9,7 @@
     "build:watch": "tsc -w",
     "npm-dts": "npm-dts generate -r node_modules/@lotun/client && mv node_modules/@lotun/client/index.d.ts src/types/@lotun/client.ts",
     "test": "npm run test:prettier",
-    "test:prettier": "prettier --check \"src/**/*.ts\" --ignore-path \"src/types\"",
+    "test:prettier": "prettier --check \"src/**/*.ts\"",
     "prepare": "ts-patch install"
   },
   "repository": {
