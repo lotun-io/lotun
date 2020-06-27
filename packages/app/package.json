@@ -1,0 +1,32 @@
+{
+  "name": "lotun-app",
+  "author": "FreshIT, s.r.o.",
+  "version": "1.1.0",
+  "main": "dist/main.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/lotun-app"
+  },
+  "scripts": {
+    "start": "NODE_ENV=devel electron app/main.js",
+    "build": "rm -rf app && tsc",
+    "watch": "tsc -w",
+    "build:app:publish": "electron-builder -p=always -mwl",
+    "build:app": "electron-builder -mwl",
+    "test": "npm run test:prettier",
+    "test:prettier": "prettier --check \"src/**/*.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^12.12.30",
+    "electron": "^8.1.0",
+    "electron-builder": "^22.4.1",
+    "prettier": "^1.19.1",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@lotun/cli": "^1.0.13",
+    "@lotun/client": "^1.0.7",
+    "electron-updater": "^4.2.5"
+  }
+}

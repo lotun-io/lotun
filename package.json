@@ -1,9 +1,11 @@
 {
   "name": "lotun",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "bootstrap": "lerna bootstrap && lerna add @lotun/client packages/lotun-app",
+    "bootstrap": "lerna bootstrap --hoist",
+    "build": "lerna run build",
+    "lerna": "lerna",
     "test": "npm run prettier && npm run lint",
     "lint": "eslint 'packages/**/*.js'",
     "lint:format": "eslint --fix 'packages/**/*.js'",
@@ -17,10 +19,13 @@
     "url": "https://github.com/lotun-io/lotun"
   },
   "description": "Monorepo for all Lotun Client packages (client, cli and electron app)",
-  "dependencies": {},
+  "dependencies": {
+    "pacote": "^11.1.10"
+  },
   "devDependencies": {
-    "lerna": "^3.20.2",
-    "prettier": "^1.19.1",
-    "typescript": "^3.8.3"
+    "@types/pacote": "^11.1.0",
+    "lerna": "^3.22.0",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.5"
   }
 }

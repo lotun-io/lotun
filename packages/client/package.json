@@ -1,0 +1,49 @@
+{
+  "name": "@lotun/client",
+  "author": "FreshIT, s.r.o.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "version": "1.1.2",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "build:watch": "tsc -w",
+    "test": "npm run test:prettier",
+    "test:prettier": "prettier --check \"src/**/*.ts\"",
+    "prepare": "ts-patch install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/client"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/ws": "^7.2.5",
+    "@lotun/api": "^1.0.0",
+    "bpmux": "^8.1.0",
+    "debug": "^4.1.1",
+    "duplexify": "^4.1.1",
+    "event-debug": "^2.1.0",
+    "match-requires": "^2.0.1",
+    "runtime-npm-install": "^5.0.0",
+    "systeminformation": "^4.26.6",
+    "ws": "^7.3.0"
+  },
+  "peerDependencies": {
+    "npm": "^6.x.x"
+  },
+  "devDependencies": {
+    "@types/duplexify": "^3.6.0",
+    "@types/global-npm": "^0.4.0",
+    "@types/node": "^12.12.44",
+    "@types/npm": "^2.0.31",
+    "prettier": "^2.0.5",
+    "ts-node": "^8.10.2",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "ts-patch": "^1.2.4",
+    "typescript": "^3.9.5",
+    "typescript-transform-paths": "^1.1.14"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@lotun/mw-force-https",
+  "author": "FreshIT, s.r.o.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "prepack": "npm run --prefix middleware-template prepack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/mw-force-https"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@types/node": "^12.12.44",
+    "@lotun/middleware": "^1.1.2"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.5"
+  }
+}

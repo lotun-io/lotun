@@ -1,0 +1,42 @@
+{
+  "name": "@lotun/api",
+  "author": "FreshIT, s.r.o.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "build:watch": "tsc -w",
+    "api:generate": "graphql-codegen",
+    "test": "npm run test:prettier",
+    "test:prettier": "prettier --check \"src/**/*.ts\"",
+    "prepare": "ts-patch install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/api"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "cross-fetch": "^3.0.4",
+    "graphql": "^15.0.0",
+    "graphql-request": "^2.0.0",
+    "graphql-tag": "^2.10.3"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^1.15.1",
+    "@graphql-codegen/typescript": "^1.15.1",
+    "@graphql-codegen/typescript-graphql-request": "^1.15.1",
+    "@graphql-codegen/typescript-operations": "^1.15.1",
+    "@types/node": "^12.12.44",
+    "@types/npm": "^2.0.31",
+    "prettier": "^2.0.5",
+    "ts-node": "^8.10.2",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "ts-patch": "^1.2.4",
+    "typescript": "^3.9.5",
+    "typescript-transform-paths": "^1.1.14"
+  }
+}

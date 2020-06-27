@@ -1,0 +1,26 @@
+{
+  "name": "mw-udp-proxy-middleware",
+  "author": "FreshIT, s.r.o.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "prepack": "rimraf dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/mw-udp-proxy/middleware-template"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@types/node": "^12.12.44",
+    "@lotun/mw-udp-proxy": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.5",
+    "rimraf": "^3.0.2"
+  }
+}
