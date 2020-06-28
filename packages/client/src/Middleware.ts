@@ -271,7 +271,12 @@ export class Middleware {
 
   async init(middleware?: MiddlewareFunction) {
     if (!middleware) {
-      const mwCwd = path.join(this.configDir, 'middleware', this.id);
+      const mwCwd = path.join(
+        this.configDir,
+        'middleware',
+        this.id,
+        `${process.pid}`,
+      );
       await fs.promises.rmdir(mwCwd, { recursive: true });
       await fs.promises.mkdir(mwCwd, { recursive: true });
       const tgzPath = path.join(mwCwd, 'package.tgz');
