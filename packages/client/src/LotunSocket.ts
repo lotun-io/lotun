@@ -32,7 +32,7 @@ export type LotunMessageApp = {
   middlewares: {
     id: string;
     name: string;
-    files: Record<string, string>;
+    tgzBase64: string;
     priority: string;
     updatedAt: string;
   }[];

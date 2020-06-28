@@ -1,14 +1,19 @@
 import { Agent as HttpAgent, AgentOptions } from 'http';
 import net from 'net';
+import path from 'path';
+import fs from 'fs';
 import { RemoteInfo } from 'dgram';
 import { EventEmitter } from 'events';
 import { debug as debugRoot } from './utils';
+import { npmInstall, npmRunBuild } from './npm/npm-commands';
+import pacote from 'pacote';
 
 const debug = debugRoot.extend('Middleware');
 
 import { createSocketPair } from './Socket';
 import { Duplex, pipeline } from 'stream';
 import { MessageStream } from './MessageStream';
+import npm from 'npm';
 
 export type EntryPoint = {
   id: string;
@@ -225,7 +230,7 @@ export class Middleware {
   id: string;
   name: string;
   app: App;
-  files: Record<string, string>;
+  tgzBase64: string;
   updatedAt: string;
   context: MiddlewareContext;
   configDir: string;
@@ -234,14 +239,14 @@ export class Middleware {
     id: string;
     app: App;
     name: string;
-    files: Record<string, string>;
+    tgzBase64: string;
     updatedAt: string;
     configDir: string;
   }) {
     this.id = options.id;
     this.name = options.name;
     this.app = options.app;
-    this.files = options.files;
+    this.tgzBase64 = options.tgzBase64;
     this.updatedAt = options.updatedAt;
     this.configDir = options.configDir;
 
@@ -256,7 +261,7 @@ export class Middleware {
       id: this.id,
       name: this.name,
       app: this.app,
-      files: {},
+      tgzBase64: '',
       updatedAt: this.updatedAt,
       configDir: this.configDir,
     });
@@ -264,136 +269,30 @@ export class Middleware {
     return clone;
   }
 
-  /*
-  async optionsModule(options: { customRequire: any }) {
-    const filename = `app_${this.context.app.name}/middleware_${this.name}/options`;
-    const sandbox: any = {};
-    const exports: any = {};
-
-    sandbox.console = global.console;
-    sandbox.process = global.process;
-    sandbox.require = options.customRequire;
-
-    sandbox.exports = exports;
-    sandbox.module = {
-      exports: exports,
-      filename: filename,
-      id: filename,
-      parent: module.parent,
-      require: options.customRequire,
-    };
-    sandbox.global = sandbox;
-
-    return this.eval({ sandbox, scriptContent: this.optionsScript });
-  }
-
-  async ruleModule(options: { customRequire: any }) {
-    const filename = `app_${this.context.app.name}/rule_${this.rule.name}`;
-    const sandbox: any = {};
-    const exports: any = {};
-
-    sandbox.console = global.console;
-    sandbox.process = global.process;
-    sandbox.require = options.customRequire;
-
-    sandbox.exports = exports;
-    sandbox.module = {
-      exports: exports,
-      filename: filename,
-      id: filename,
-      parent: module.parent,
-      require: options.customRequire,
-    };
-    sandbox.global = sandbox;
-
-    return this.eval({ sandbox, scriptContent: this.rule.ruleScript });
-  }
-
-  ruleRequire(packagesMap: Map<string, any>) {
-    return (packageName: string) => {
-      return packagesMap.get(packageName);
-    };
-  }
-
-  eval(options: { sandbox: any; scriptContent: string }) {
-    const sandbox = options.sandbox;
-
-    const vmOptions = {
-      filename: sandbox.module.filename,
-    };
-
-    const script = new vm.Script(options.scriptContent, vmOptions);
-    script.runInNewContext(sandbox, vmOptions);
-
-    return sandbox.module.exports;
-  }
-
-  async getPackageMap(script: string, installPath: string) {
-    const packagesMap = new Map<string, any>();
-
-    const requires = (matcheRequires(script) as {
-      name: string;
-      string: string;
-    }[]).map((match) => match.name);
-
-    debug('requires', requires);
-
-    let installPackages: string[] = [];
-    requires.map((packageName) => {
-      if (require('module').builtinModules.includes(packageName)) {
-        packagesMap.set(packageName, require(packageName));
-      } else {
-        installPackages.push(packageName);
-      }
-    });
-
-    debug('installPackages', installPackages);
-
-    const npmImportAsync = createNpmImportAsync(installPath);
-    const packages = (await npmImportAsync(installPackages)) as any[];
-
-    packages.map((packageContent, index) => {
-      packagesMap.set(installPackages[index], packageContent);
-    });
-
-    return packagesMap;
-  }
-  */
-
   async init(middleware?: MiddlewareFunction) {
-    /*
-    const ruleInstallPath = path.join(this.configDir, 'rule', this.rule.id);
-    const rulePackagesMap = await this.getPackageMap(
-      this.rule.ruleScript,
-      ruleInstallPath,
-    );
-    const ruleRequire = this.ruleRequire(rulePackagesMap);
+    if (!middleware) {
+      const mwCwd = path.join(this.configDir, 'middleware', this.id);
+      await fs.promises.rmdir(mwCwd, { recursive: true });
+      await fs.promises.mkdir(mwCwd, { recursive: true });
+      const tgzPath = path.join(mwCwd, 'package.tgz');
+      const cwd = path.join(mwCwd, 'package');
 
-    const ruleModule = await this.ruleModule({ customRequire: ruleRequire });
-    if (typeof ruleModule !== 'function') {
-      throw new Error('rule script does not export function');
+      const tgzBuffer = Buffer.from(this.tgzBase64, 'base64');
+
+      await fs.promises.writeFile(tgzPath, tgzBuffer);
+      await pacote.extract(tgzPath, cwd);
+
+      const installOutput = await npmInstall({ cwd });
+      const runBuildOutput = await npmRunBuild({ cwd });
+      console.log(runBuildOutput);
+      middleware = require(cwd);
     }
 
-    const optionsInstallPath = path.join(this.configDir, 'middleware', this.id);
-    const optionsPackagesMap = await this.getPackageMap(
-      this.optionsScript,
-      optionsInstallPath,
-    );
-    const optionsRequire = this.ruleRequire(optionsPackagesMap);
-
-    const optionModule = await this.optionsModule({
-      customRequire: optionsRequire,
-    });
-    if (typeof optionModule !== 'function') {
-      throw new Error('option script does not export function');
+    if (!middleware) {
+      throw new Error('middleware is undefined');
     }
 
-    this.context.options = optionModule;
-    */
-
-    // @TODO build & require from files
-    // @ts-ignore
-    middleware(this.context);
+    await middleware(this.context);
   }
 
   connection(socket: net.Socket | UdpProxySocket) {

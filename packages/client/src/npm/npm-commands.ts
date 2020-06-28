@@ -1,9 +1,9 @@
-import { fork } from 'child_process';
+import { fork, ForkOptions } from 'child_process';
 import path from 'path';
 import npm from 'npm';
 
 export type ChildMessage = {
-  type: 'ready' | 'install' | 'build' | 'success' | 'error';
+  type: 'ready' | 'install' | 'run-build' | 'success' | 'error';
   data: any;
 };
 
@@ -27,10 +27,14 @@ if (!process.env.LOTUN_USE_GLOBAL_NPM) {
   process.env.GLOBAL_NPM_PATH = path.join(nodeModulesPath, 'npm');
 }
 
-export const npmInstall = (npmLoadOpts: NpmLoadOpts) => {
-  new Promise<string>((resolve, reject) => {
+export const npmInstall = (
+  forkOptions: ForkOptions,
+  npmLoadOpts: NpmLoadOpts = {},
+) => {
+  return new Promise<string>((resolve, reject) => {
     const child = fork(path.join(__dirname, 'npm-commands-child.js'), [], {
       silent: true,
+      ...forkOptions,
     });
 
     let output = '';
@@ -56,10 +60,14 @@ export const npmInstall = (npmLoadOpts: NpmLoadOpts) => {
   });
 };
 
-export const npmBuild = (npmLoadOpts: NpmLoadOpts) => {
-  new Promise<string>((resolve, reject) => {
+export const npmRunBuild = (
+  forkOptions: ForkOptions,
+  npmLoadOpts: NpmLoadOpts = {},
+) => {
+  return new Promise<string>((resolve, reject) => {
     const child = fork(path.join(__dirname, 'npm-commands-child.js'), [], {
       silent: true,
+      ...forkOptions,
     });
 
     let output = '';
@@ -70,7 +78,7 @@ export const npmBuild = (npmLoadOpts: NpmLoadOpts) => {
     child.on('message', ({ type, data }: ChildMessage) => {
       if (type === 'ready') {
         let childMessage: ChildMessage = {
-          type: 'build',
+          type: 'run-build',
           data: { npmLoadOpts: { ...defaultNpmLoadOpts, ...npmLoadOpts } },
         };
         child.send(childMessage);

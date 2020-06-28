@@ -65,7 +65,7 @@ export class ForwardPoint {
     options: {
       id: string;
       name: string;
-      files: Record<string, string>;
+      tgzBase64: string;
       updatedAt: string;
     },
     priority: string,

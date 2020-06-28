@@ -19,14 +19,15 @@
     "access": "public"
   },
   "dependencies": {
+    "@lotun/api": "^1.0.0",
     "@types/debug": "^4.1.5",
     "@types/ws": "^7.2.5",
-    "@lotun/api": "^1.0.0",
     "bpmux": "^8.1.0",
     "debug": "^4.1.1",
     "duplexify": "^4.1.1",
     "event-debug": "^2.1.0",
     "match-requires": "^2.0.1",
+    "pacote": "^11.1.10",
     "runtime-npm-install": "^5.0.0",
     "systeminformation": "^4.26.6",
     "ws": "^7.3.0"

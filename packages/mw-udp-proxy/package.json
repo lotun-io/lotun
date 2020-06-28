@@ -3,7 +3,7 @@
   "author": "FreshIT, s.r.o.",
   "license": "MIT",
   "main": "dist/index.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build": "tsc",
     "prepack": "npm run --prefix middleware-template prepack"

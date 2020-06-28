@@ -3,8 +3,6 @@ import util from 'util';
 import { ChildMessage } from './npm-commands';
 
 const npmLoad = util.promisify(npm.load);
-const npmInstall = util.promisify(npm.commands.install);
-const npmBuild = util.promisify(npm.commands.build);
 
 process.on('message', async ({ type, data }: ChildMessage) => {
   if (!process.send) {
@@ -14,7 +12,7 @@ process.on('message', async ({ type, data }: ChildMessage) => {
   if (type === 'install') {
     // @ts-ignore
     await npmLoad(data.npmLoadOpts);
-
+    const npmInstall = util.promisify(npm.commands.install);
     try {
       await npmInstall([]);
       process.send({ type: 'success' });
@@ -25,12 +23,12 @@ process.on('message', async ({ type, data }: ChildMessage) => {
     return;
   }
 
-  if (type === 'build') {
+  if (type === 'run-build') {
     // @ts-ignore
     await npmLoad(data.npmLoadOpts);
-
+    const npmRunScript = util.promisify(npm.commands['run-script']);
     try {
-      await npmBuild([]);
+      await npmRunScript(['build']);
       process.send({ type: 'success' });
     } catch (err) {
       process.send({ type: 'error', data: err.message });
