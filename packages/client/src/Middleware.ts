@@ -284,9 +284,8 @@ export class Middleware {
 
       const installOutput = await npmInstall({ cwd });
       const runBuildOutput = await npmRunBuild({ cwd });
-      console.log(runBuildOutput);
+
       middleware = require(cwd).default;
-      console.log(middleware);
     }
 
     if (!middleware) {

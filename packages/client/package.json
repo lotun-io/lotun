@@ -29,7 +29,7 @@
     "match-requires": "^2.0.1",
     "pacote": "^11.1.10",
     "runtime-npm-install": "^5.0.0",
-    "systeminformation": "^4.26.6",
+    "systeminformation": "^4.26.9",
     "ws": "^7.3.0"
   },
   "peerDependencies": {
@@ -38,12 +38,12 @@
   "devDependencies": {
     "@types/duplexify": "^3.6.0",
     "@types/global-npm": "^0.4.0",
-    "@types/node": "^12.12.44",
+    "@types/node": "^12.12.47",
     "@types/npm": "^2.0.31",
     "prettier": "^2.0.5",
     "ts-node": "^8.10.2",
-    "ts-node-dev": "^1.0.0-pre.44",
-    "ts-patch": "^1.2.4",
+    "ts-node-dev": "^1.0.0-pre.49",
+    "ts-patch": "^1.2.5",
     "typescript": "^3.9.5",
     "typescript-transform-paths": "^1.1.14"
   }
