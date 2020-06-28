@@ -24,7 +24,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@lotun/client": "^1.1.3",
+    "@lotun/client": "^1.1.4",
     "chalk": "^4.1.0",
     "commander": "^5.1.0",
     "npm": "^6.14.5",
