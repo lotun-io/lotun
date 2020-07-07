@@ -27,7 +27,7 @@
     "@lotun/client": "^1.1.5",
     "chalk": "^4.1.0",
     "commander": "^5.1.0",
-    "npm": "^6.14.5",
+    "npm": "^6.14.6",
     "source-map-support": "^0.5.19",
     "update-notifier": "^4.1.0"
   },
