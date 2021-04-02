@@ -1,0 +1,16 @@
+{
+  "schema": "http://localhost:4000/graphql",
+  "generates": {
+    "src/sdk.ts": {
+      "documents": "src/documents/**/*.graphql",
+      "plugins": [
+        "typescript",
+        "typescript-operations",
+        "typescript-graphql-request"
+      ],
+      "config": {
+        "enumsAsTypes": true
+      }
+    }
+  }
+}

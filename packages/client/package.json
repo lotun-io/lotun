@@ -1,0 +1,28 @@
+{
+  "name": "@lotun/client",
+  "version": "1.1.18",
+  "main": "dist/index.js",
+  "scripts": {
+    "build:clean": "rm -rf dist"
+  },
+  "author": "Lotun, s.r.o.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/client"
+  },
+  "dependencies": {
+    "@lotun/api": "^1.0.0",
+    "@types/http-proxy": "^1.17.5",
+    "@types/pacote": "^11.1.0",
+    "@types/proper-lockfile": "^4.1.1",
+    "@types/systeminformation": "^3.54.1",
+    "@types/uuid": "^8.3.0",
+    "http-proxy": "^1.18.1",
+    "p-queue": "^6.6.2",
+    "pacote": "^11.3.0",
+    "proper-lockfile": "^4.1.2",
+    "systeminformation": "^5.6.7",
+    "uuid": "^8.3.2"
+  }
+}

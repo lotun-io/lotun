@@ -1,0 +1,26 @@
+{
+  "name": "@lotun/cli",
+  "version": "1.1.14",
+  "main": "dist/index.js",
+  "bin": {
+    "lotun": "dist/index.js"
+  },
+  "scripts": {
+    "build:clean": "rm -rf dist"
+  },
+  "author": "Lotun, s.r.o.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/cli"
+  },
+  "dependencies": {
+    "@lotun/client": "^1.1.18",
+    "chalk": "^4.1.0",
+    "commander": "^7.2.0",
+    "update-notifier": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/update-notifier": "^5.0.0"
+  }
+}

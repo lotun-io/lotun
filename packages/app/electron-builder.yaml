@@ -1,0 +1,18 @@
+appId: "com.freshit.lotun"
+productName: "Lotun"
+extraResources: ["assets/icons/*.png"]
+asar: false
+publish:
+  owner: "lotun-io"
+  repo: "lotun"
+  provider: "github"
+mac:
+  category: "public.app-category.developer-tools"
+  icon: "./Lotun.icns"
+  extendInfo:
+    LSUIElement: 1
+win:
+  target: "nsis"
+  icon: "./Lotun.ico"
+linux:
+  target: "AppImage"

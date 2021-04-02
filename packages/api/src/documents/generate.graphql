@@ -1,0 +1,8 @@
+query generateDeviceToken {
+  generateDeviceToken {
+    ... on GenerateDeviceToken {
+      deviceToken
+      __typename
+    }
+  }
+}

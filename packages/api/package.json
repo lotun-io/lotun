@@ -1,0 +1,27 @@
+{
+  "name": "@lotun/api",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build:clean": "rm -rf dist",
+    "gql:codegen": "graphql-codegen"
+  },
+  "author": "Lotun, s.r.o.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/api"
+  },
+  "dependencies": {
+    "cross-fetch": "^3.1.2",
+    "graphql": "^15.5.0",
+    "graphql-request": "^3.4.0",
+    "graphql-tag": "^2.11.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^1.21.3",
+    "@graphql-codegen/typescript": "^1.21.1",
+    "@graphql-codegen/typescript-graphql-request": "^3.1.0",
+    "@graphql-codegen/typescript-operations": "^1.17.15"
+  }
+}

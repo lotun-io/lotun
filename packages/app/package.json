@@ -1,0 +1,27 @@
+{
+  "name": "@lotun/app",
+  "version": "1.0.0",
+  "private": true,
+  "main": "app/main.js",
+  "scripts": {
+    "start": "NODE_ENV=local electron app/main.js",
+    "build:clean": "rm -rf app",
+    "build:app:publish": "electron-builder -p=always -mwl",
+    "build:app": "electron-builder -mwl"
+  },
+  "author": "Lotun, s.r.o.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lotun-io/lotun/tree/master/packages/app"
+  },
+  "devDependencies": {
+    "electron": "12.0.2",
+    "electron-builder": "^22.10.5",
+    "typescript": "^4.2.3"
+  },
+  "dependencies": {
+    "@lotun/client": "^1.1.18",
+    "electron-updater": "^4.3.8"
+  }
+}
